@@ -155,11 +155,12 @@ loading <- function(rdata_file)
 #' Calculation of tissue specific gene enrichment using hypergeometric test
 #'
 #' @param inputGenes A vector containing the input genes.
-#' @param dataset A String describing the dataset to be used for enrichment, Default "Human Protein Atlas". Other sources "GTEx combine","GTEx sub-tissue","Mouse ENCODE". Not required when providing \code{tissueSpecificGenes}.
-#' @param organism A String describing the organism, default "Homo Sapiens", other "Mus Musculus". Not required when providing \code{tissueSpecificGenes}.
-#' @param tissueSpecificGeneType A String describing type of tissue specific genes to be used, default "All", others "Tissue-Enriched","Tissue-Enhanced","Group-Enriched".
-#' @param geneFormat Type of gene symbol, default "Gene Symbol", other "EnsemblId".
-#' @param isHomolog Flag for usage of orthologus genes, default FALSE. Not required when providing \code{tissueSpecificGenes}.
+#' @param dataset An integer describing the dataset to be used for enrichment, 1 for "Human Protein Atlas", 2 for "GTEx combine", 3 for "GTEx sub-tissue", 4 for "Mouse ENCODE". Default 1.
+#' @param organism An integer describing the organism, 1 for "Homo Sapiens", 2 for "Mus Musculus". Default 1.
+#' @param tissueSpecificGeneType An integer describing type of tissue specific genes to be used, 1 for "All", 2 for "Tissue-Enriched",3 for "Tissue-Enhanced", and 4 for "Group-Enriched". Default 1.
+#' @param multiHypoCorrection Flag to carry out multiple hypothesis correction. Default TRUE.
+#' @param geneFormat Type of gene symbol, 1 for "Gene Symbol", 2 for "EnsemblId". Default 1.
+#' @param isHomolog Flag for usage of orthologus genes, default FALSE.
 #' @export
 #' @return A data frame object with three columns, Gene, Tissues, and the enrichment group of the gene in the given tissue.
 #' @examples
@@ -171,78 +172,86 @@ loading <- function(rdata_file)
 #' TSgenes<-tissueSpecificGenesRetrieval(humanProteinAtlas)
 #' head(TSgenes)
 
-tissueSpecificGeneEnrichment<-function(inputGenes,
-                                       dataset=c("Human Protein Atlas","GTEx combine","GTEx sub-tissue","Mouse ENCODE"),
+tissueSpecificGeneEnrichment<-function(inputGenes = NULL,
+                                       dataset=1,#c("Human Protein Atlas","GTEx combine","GTEx sub-tissue","Mouse ENCODE"),
                                        organism=c("Homo Sapiens","Mus Musculus"),tissueSpecificGeneType=c("All","Tissue-Enriched","Tissue-Enhanced","Group-Enriched"),
-                                        geneFormat=c("EnsemblId","Gene Symbol"),isHomolog=FALSE)
+                                        geneFormat=c("EnsemblId","Gene Symbol"),isHomolog=FALSE,multiHypoCorrection=TRUE)
 {
   ###Add checks for the conditions
-  tissueSpecificGenes<-ensure_that(expressionData, is.data.frame(.) && !is.null(.) && (nrow(.) > 0) && (ncol(.) == 3),err_desc = "tissueSpecificGenes should be a non-empty dataframe object.")
-  foldChangeThreshold<-ensure_that(foldChangeThreshold, is.numeric(.) && (. >=1),err_desc = "foldChangeThreshold should be a numeric value greater than or equal to 1.")
-  maxNumberOfTissues<-ensure_that(maxNumberOfTissues, is.numeric(.) && (. >=2),err_desc = "maxNumberOfTissues should be an integer value greater than or equal to 2.")
-  expressedGeneThreshold<-ensure_that(expressedGeneThreshold, is.numeric(.) && (. >=0),err_desc = "expressedGeneThreshold should be a numeric value greater than or equal to 0.")
+  inputGenes<-ensure_that(inputGenes, !is.null(.) && is.vector(.),err_desc = "inputGenes should be a null vector")
+  dataset<-ensure_that(dataset, !is.null(.) && is.integer(.) && ((. >=1) || (. <=4)),err_desc = "dataset should be 1, 2, 3 or 4")
+  organism<-ensure_that(organism, !is.null(.) && is.integer(.) && ((. >=1) || (. <=2)),err_desc = "organism should be 1 or 2")
+  #tissueSpecificGenes<-ensure_that(tissueSpecificGeneType, is.data.frame(.) && !is.null(.) && (nrow(.) > 0) && (ncol(.) == 3),err_desc = "tissueSpecificGenes should be a non-empty dataframe object.")
+  geneFormat<-ensure_that(geneFormat,!is.null(.) && is.integer(.) && ((. >=1) || (. <=2)),err_desc = "geneFormat should be 1 or 2")
+  tissueSpecificGeneType<-ensure_that(tissueSpecificGeneType,!is.null(.) && is.integer(.)  && ((. >=1) || (. <=4)),err_desc = "tissueSpecificGeneType should be 1, 2, 3 or 4")
+  isHomolog<-ensure_that(isHomolog,!is.null(.) && is.logical(.) ,err_desc = "isHomolog should be a TRUE or FALSE")
+  multiHypoCorrection<-ensure_that(multiHypoCorrection,!is.null(.) && is.logical(.) ,err_desc = "multiHypoCorrection should be a TRUE or FALSE")
+  #foldChangeThreshold<-ensure_that(foldChangeThreshold, is.numeric(.) && (. >=1),err_desc = "foldChangeThreshold should be a numeric value greater than or equal to 1.")
+  #maxNumberOfTissues<-ensure_that(maxNumberOfTissues, is.numeric(.) && (. >=2),err_desc = "maxNumberOfTissues should be an integer value greater than or equal to 2.")
+  #expressedGeneThreshold<-ensure_that(expressedGeneThreshold, is.numeric(.) && (. >=0),err_desc = "expressedGeneThreshold should be a numeric value greater than or equal to 0.")
 
   ##Enviroment to load datasets
   env<-NULL
   ##Load gene mapping and orthologs Data
-  if(dataset == "Human Protein Atlas")
+  if(dataset == 1)
   {
-    env<-loading("data/Human-ProteinAtlas.RData")
-  }else if(dataset == "GTEx combine")
+    env<-loading("data/proteinAtlasV18-TSEA.Rdata")
+  }else if(dataset == 2)
   {
-    env<-loading("data/GTEx-combine.RData")
-  }else if(dataset == "GTEx sub-tissue")
+    env<-loading("data/GTEx-combine-TSEA.Rdata")
+  }else if(dataset == 3)
   {
-    env<-loading("data/GTEx-subtissue.RData")
-  }else if(dataset == "Mouse ENCODE")
+    env<-loading("data/GTEx-combine-TSEA.Rdata")
+  }else if(dataset == 4)
   {
-    env<-loading("data/ENCODE.RData")
+    env<-loading("data/ENCODE-TSEA.Rdata")
   }else
   {
     print("Please enter correct dataset")
   }
 
+  expressionData<-env$expressionData
+  tissueDetails<-env$tissueDetails
   ##Load gene mapping and orthologs Data
-  if(organism == "Homo Sapiens")
-  {
+  envMapping<-loading("data/geneMappings.Rdata")
 
-  }else if(organism == "Mus Musculus")
+  ##Check for organism and homolog to update geneMapping Variable
+  if(organism == 1)#"Homo Sapiens")
   {
-
+    geneMapping<-envMapping$humanGeneMapping
+  }else if(organism == 2)#"Mus Musculus")
+  {
+    geneMapping<-envMapping$mouseGeneMapping
   }else
   {
     print("Please enter correct dataset")
   }
 
-  # if(geneFormat == "EnsemblId")
-  # {
-  #
-  # }else if(geneFormat == "Gene Symbol")
-  # {
-  #
-  # }else
-  # {
-  #   print("Please enter correct dataset")
-  # }
-
-  if(tissueSpecificGenesType == "All")
+  if(isHomolog)
   {
-    env.finalTissueSpecificGenes<-tissueSpecificGenes
+    geneMapping<-envMapping$mouseHumanOrthologs
+  }
+
+  ###Update tissueSpecificGene variable based on the group
+  if(tissueSpecificGenesType == 1)
+  {
+    finalTissueSpecificGenes<-env$tissueSpecificGenes
   }else if(tissueSpecificGenesType == 2)
   {
-    finalTissueSpecificGenes<-tissueSpecificGenes %>% filter(Group == "Tissue-Enriched")
+    finalTissueSpecificGenes<-env$tissueSpecificGenes %>% filter(Group == "Tissue-Enriched")
   }else if(tissueSpecificGenesType == 3)
   {
-    finalTissueSpecificGenes<-tissueSpecificGenes %>% filter(Group == "Tissue-Enhanced")
+    finalTissueSpecificGenes<-env$tissueSpecificGenes %>% filter(Group == "Tissue-Enhanced")
   }else if(tissueSpecificGenesType == 4)
   {
-    finalTissueSpecificGenes<-tissueSpecificGenes %>% filter(Group == "Group-Enriched")
+    finalTissueSpecificGenes<-env$tissueSpecificGenes %>% filter(Group == "Group-Enriched")
   }else
   {
     print("Something is wrong!")
   }
 
   inputGenes<-toupper(inputGenes)
+
   ###Check if it is ortholog comparison or not#######
   if(isHomolog)
   {
@@ -328,7 +337,7 @@ tissueSpecificGeneEnrichment<-function(inputGenes,
     genesNotFound<-c()
     if(length(inputGenes) != length(intersect(as.character(geneMappingForCurrentDataset$Gene),inputEnsemblGenes)))
     {
-      if(geneFormat == "Gene Symbol")
+      if(geneFormat == 2)
       {
         genesNotFound<-base::setdiff(inputGenes,as.character(geneMappingForCurrentDataset$Gene.name))
       }else
@@ -340,7 +349,7 @@ tissueSpecificGeneEnrichment<-function(inputGenes,
   }
 
   ####Calculate the Hypergeometric P-Value#########
-  tissueNames<-as.character(tissueDetails$TissueName)
+  tissueNames<-as.character(tissueDetails$RName)
   pValueList<-c()
   overlapGenesList<-c()
   overlapTissueGenesList<-list()
@@ -351,22 +360,29 @@ tissueSpecificGeneEnrichment<-function(inputGenes,
     overlapTissueGenesList[[tissue]]<-intersect(tissueGenes$Gene,inputEnsemblGenes)
     GenesInTissue<-nrow(tissueGenes)
     pValue<-phyper(overlapGenes-1,GenesInTissue,nrow(geneMappingForCurrentDataset)-GenesInTissue,length(inputEnsemblGenes),lower.tail = F)
-    pValueList<-c(pValueList,-log10(pValue))
+    pValueList<-c(pValueList,pValue)
     overlapGenesList<-c(overlapGenesList,overlapGenes)
   }
 
+  if(multiHypoCorrection)
+  {
+    ##Multiple hypothesis correction
+    pValueList<-p.adjust(pValueList,method = "BH")
+  }
+  pValueList<-(-log10(pValueList))
 
-  output<-data.frame(Tissue=tissueNames,Log10PValue=pValueList,Samples=as.numeric(tissueDetails$Sample),Tissue.Specific.Genes=overlapGenesList)
+  output<-data.frame(Tissue=tissueNames,Log10PValue=pValueList,Tissue.Specific.Genes=overlapGenesList)
   output<-output[with(output, order(-Log10PValue)), ]
-  return(list(output,genesNotFound))
+  return(list(output,overlapTissueGenesList,genesNotFound))
 }
 
 
 #' Calculation of tissue specific gene enrichment using hypergeometric test for custom datasets
 #'
 #' @param inputGenes A vector containing the input genes.
-#' @param tissueSpecificGenes A dataframe object. Output from `tissueSpecificGenesRetrieval` function, default NULL.
-#' @param tissueSpecificGeneType A String describing type of tissue specific genes to be used, default "All", others "Tissue-Enriched","Tissue-Enhanced","Group-Enriched".
+#' @param tissueSpecificGenes A dataframe object. Output from `tissueSpecificGenesRetrieval` function. Default NULL.
+#' @param tissueSpecificGeneType An integer describing type of tissue specific genes to be used, 1 for "All", 2 for "Tissue-Enriched",3 for "Tissue-Enhanced", and 4 for "Group-Enriched". Default 1.
+#' @param multiHypoCorrection Flag to carry out multiple hypothesis correction. Default TRUE.
 #' @export
 #' @return A data frame object with three columns, Gene, Tissues, and the enrichment group of the gene in the given tissue.
 #' @examples
@@ -378,18 +394,40 @@ tissueSpecificGeneEnrichment<-function(inputGenes,
 #' TSgenes<-tissueSpecificGenesRetrieval(humanProteinAtlas)
 #' head(TSgenes)
 
-tissueSpecificGeneEnrichmentCustom<-function(inputGenes,tissueSpecificGenes=NULL,
-                                       tissueSpecificGeneType=c("All","Tissue-Enriched","Tissue-Enhanced","Group-Enriched"))
+tissueSpecificGeneEnrichmentCustom<-function(inputGenes=NULL,tissueSpecificGenes=NULL,
+                                       tissueSpecificGeneType= 1,multiHypoCorrection = TRUE)
 {
   ###Add checks for the conditions
+  inputGenes<-ensure_that(inputGenes, !is.null(.) && is.vector(.) && !is.null(.),err_desc = "inputGenes should be a null vector")
   ##Check for dataset class, rows and should not be NULL
-  tissueSpecificGenes<-ensure_that(expressionData, is.data.frame(.) && !is.null(.) && (nrow(.) > 0) && (ncol(.) == 3),err_desc = "tissueSpecificGenes should be a non-empty dataframe object.")
+  tissueSpecificGenes<-ensure_that(tissueSpecificGenes,!is.null(.) && is.data.frame(.) && !is.null(.) && (nrow(.) > 0) && (ncol(.) == 3),err_desc = "tissueSpecificGenes should be a non-empty dataframe object.")
+  tissueSpecificGeneType<-ensure_that(tissueSpecificGeneType,!is.null(.) && is.integer(.) && ((. >=1) || (. <=4)),err_desc = "tissueSpecificGeneType should be 1, 2, 3 or 4")
+  multiHypoCorrection<-ensure_that(multiHypoCorrection,!is.null(.) && is.logical(.),err_desc = "multiHypoCorrection should be 0 or 1")
+
+  if(tissueSpecificGenesType == 1)
+  {
+    finalTissueSpecificGenes<-tissueSpecificGenes %>% filter(Group %in% c("Tissue-Enriched","Tissue-Enhanced","Group-Enriched"))
+  }else if(tissueSpecificGenesType == 2)
+  {
+    finalTissueSpecificGenes<-tissueSpecificGenes %>% filter(Group == "Tissue-Enriched")
+  }else if(tissueSpecificGenesType == 3)
+  {
+    finalTissueSpecificGenes<-tissueSpecificGenes %>% filter(Group == "Tissue-Enhanced")
+  }else if(tissueSpecificGenesType == 4)
+  {
+    finalTissueSpecificGenes<-tissueSpecificGenes %>% filter(Group == "Group-Enriched")
+  }else
+  {
+    print("Something is wrong!")
+  }
+
+  totalGenes<-as.character(unique(tissueSpecificGenes$Gene))
   genesNotFound<-c()
-  genesNotFound<-base::setdiff(inputGenes,as.character(unique(dataset$Gene)))
-  inputEnsemblGenes<-intersect(inputGenes,as.character(unique(dataset$Gene)))
+  genesNotFound<-base::setdiff(inputGenes,totalGenes)
+  inputEnsemblGenes<-intersect(inputGenes,totalGenes)
 
   ####Calculate the Hypergeometric P-Value#########
-  tissueNames<-as.character(tissueDetails$TissueName)
+  tissueNames<-as.character(tissueDetails$RName)
   pValueList<-c()
   overlapGenesList<-c()
   overlapTissueGenesList<-list()
@@ -399,12 +437,17 @@ tissueSpecificGeneEnrichmentCustom<-function(inputGenes,tissueSpecificGenes=NULL
     overlapGenes<-length(intersect(tissueGenes$Gene,inputEnsemblGenes))
     overlapTissueGenesList[[tissue]]<-intersect(tissueGenes$Gene,inputEnsemblGenes)
     GenesInTissue<-nrow(tissueGenes)
-    pValue<-phyper(overlapGenes-1,GenesInTissue,nrow(geneMappingForCurrentDataset)-GenesInTissue,length(inputEnsemblGenes),lower.tail = F)
-    pValueList<-c(pValueList,-log10(pValue))
+    pValue<-phyper(overlapGenes-1,GenesInTissue,length(totalGenes)-GenesInTissue,length(inputEnsemblGenes),lower.tail = F)
+    pValueList<-c(pValueList,pValue)
     overlapGenesList<-c(overlapGenesList,overlapGenes)
   }
-
-  output<-data.frame(Tissue=tissueNames,Log10PValue=pValueList,Samples=as.numeric(tissueDetails$Sample),Tissue.Specific.Genes=overlapGenesList)
+  if(multiHypoCorrection)
+  {
+    ##Multiple hypothesis correction
+    pValueList<-p.adjust(pValueList,method = "BH")
+  }
+  pValueList<-(-log10(pValueList))
+  output<-data.frame(Tissue=tissueNames,Log10PValue=pValueList,Tissue.Specific.Genes=overlapGenesList)
   output<-output[with(output, order(-Log10PValue)), ]
-  return(list(output,genesNotFound))
+  return(list(output,overlapTissueGenesList,genesNotFound))
 }
