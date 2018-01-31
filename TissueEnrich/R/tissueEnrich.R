@@ -1,8 +1,9 @@
-ensure_numeric<-ensure_that(is.numeric(.),"Please enter numeric values.")
-
+#ensure_numeric<-ensure_that(is.numeric(.),"Please enter numeric values.")
+library(tidyverse)
+library(ensurer)
 
 #' Calculation of tissue specific genes by using the algorithm from human protein atlas project.
-#'
+#' @author Ashish Jain
 #' @param expressionData A dataframe object containing gene expression values (Rows are genes and Tissues are columns) .
 #' @param foldChangeThreshold A number. Threshold of fold change, default 5.
 #' @param maxNumberOfTissues A number. Maximum number of tissues in a group for group enriched genes, default 7.
@@ -10,21 +11,15 @@ ensure_numeric<-ensure_that(is.numeric(.),"Please enter numeric values.")
 #' @export
 #' @return A data frame object with three columns, Gene, Tissues, and the enrichment group of the gene in the given tissue.
 #' @examples
-#' library(tidyverse)
-#' data<-read.table("humanProteinAtlasV18.tsv",header = T,sep = "\t")
-#' spreadData<-data %>% spread(key = Sample,value= Value)
-#' row.names(spreadData)<-spreadData[,1]
-#' humanProteinAtlas<-spreadData[gene,c(4:ncol(spreadData))]
-#' TSgenes<-tissueSpecificGenesRetrieval(humanProteinAtlas)
-#' head(TSgenes)
+
 
 tissueSpecificGenesRetrieval<-function(expressionData,foldChangeThreshold=5,maxNumberOfTissues=7,expressedGeneThreshold=1)
 {
   ###Add checks for the conditions
-  expressionData<-ensure_that(expressionData, is.data.frame(.) && !is.null(.) && (nrow(.) > 0) && (ncol(.) > 1),err_desc = "expressionData should be a non-empty dataframe object with atleast 1 gene and 2 tissues. Rows are treated as genes and columns as tissues.")
-  foldChangeThreshold<-ensure_that(foldChangeThreshold, is.numeric(.) && (. >=1),err_desc = "foldChangeThreshold should be a numeric value greater than or equal to 1.")
-  maxNumberOfTissues<-ensure_that(maxNumberOfTissues, is.numeric(.) && (. >=2),err_desc = "maxNumberOfTissues should be an integer value greater than or equal to 2.")
-  expressedGeneThreshold<-ensure_that(expressedGeneThreshold, is.numeric(.) && (. >=0),err_desc = "expressedGeneThreshold should be a numeric value greater than or equal to 0.")
+  expressionData<-ensurer::ensure_that(expressionData, !is.null(.) && is.data.frame(.) && (nrow(.) > 0) && (ncol(.) > 1),err_desc = "expressionData should be a non-empty dataframe object with atleast 1 gene and 2 tissues. Rows are treated as genes and columns as tissues.")
+  foldChangeThreshold<-ensurer::ensure_that(foldChangeThreshold, !is.null(.) && is.numeric(.) && (. >=1),err_desc = "foldChangeThreshold should be a numeric value greater than or equal to 1.")
+  maxNumberOfTissues<-ensurer::ensure_that(maxNumberOfTissues, !is.null(.) && is.numeric(.) && (. >=2),err_desc = "maxNumberOfTissues should be an integer value greater than or equal to 2.")
+  expressedGeneThreshold<-ensurer::ensure_that(expressedGeneThreshold, !is.null(.) && is.numeric(.) && (. >=0),err_desc = "expressedGeneThreshold should be a numeric value greater than or equal to 0.")
 
   minNumberOfTissues<-2
   notExpressed<-data.frame()
@@ -154,57 +149,48 @@ loading <- function(rdata_file)
 
 #' Calculation of tissue specific gene enrichment using hypergeometric test
 #'
+#' @author Ashish Jain
 #' @param inputGenes A vector containing the input genes.
 #' @param dataset An integer describing the dataset to be used for enrichment, 1 for "Human Protein Atlas", 2 for "GTEx combine", 3 for "GTEx sub-tissue", 4 for "Mouse ENCODE". Default 1.
 #' @param organism An integer describing the organism, 1 for "Homo Sapiens", 2 for "Mus Musculus". Default 1.
 #' @param tissueSpecificGeneType An integer describing type of tissue specific genes to be used, 1 for "All", 2 for "Tissue-Enriched",3 for "Tissue-Enhanced", and 4 for "Group-Enriched". Default 1.
 #' @param multiHypoCorrection Flag to carry out multiple hypothesis correction. Default TRUE.
-#' @param geneFormat Type of gene symbol, 1 for "Gene Symbol", 2 for "EnsemblId". Default 1.
+#' @param geneFormat Type of gene symbol, 1 for "EnsemblId", 2 for "Gene Symbol". Default 1.
 #' @param isHomolog Flag for usage of orthologus genes, default FALSE.
 #' @export
-#' @return A data frame object with three columns, Gene, Tissues, and the enrichment group of the gene in the given tissue.
+#' @return A list object with three objects, first is the enrichment matrix, second is the list containing the tissue-specific genes found in the input genes, third is the vector containing not found genes.
 #' @examples
-#' library(tidyverse)
-#' data<-read.table("humanProteinAtlasV18.tsv",header = T,sep = "\t")
-#' spreadData<-data %>% spread(key = Sample,value= Value)
-#' row.names(spreadData)<-spreadData[,1]
-#' humanProteinAtlas<-spreadData[gene,c(4:ncol(spreadData))]
-#' TSgenes<-tissueSpecificGenesRetrieval(humanProteinAtlas)
-#' head(TSgenes)
+
 
 tissueSpecificGeneEnrichment<-function(inputGenes = NULL,
                                        dataset=1,#c("Human Protein Atlas","GTEx combine","GTEx sub-tissue","Mouse ENCODE"),
-                                       organism=c("Homo Sapiens","Mus Musculus"),tissueSpecificGeneType=c("All","Tissue-Enriched","Tissue-Enhanced","Group-Enriched"),
-                                        geneFormat=c("EnsemblId","Gene Symbol"),isHomolog=FALSE,multiHypoCorrection=TRUE)
+                                       organism=1,tissueSpecificGeneType=1,multiHypoCorrection=TRUE,
+                                        geneFormat=1,isHomolog=FALSE)
 {
   ###Add checks for the conditions
-  inputGenes<-ensure_that(inputGenes, !is.null(.) && is.vector(.),err_desc = "inputGenes should be a null vector")
-  dataset<-ensure_that(dataset, !is.null(.) && is.integer(.) && ((. >=1) || (. <=4)),err_desc = "dataset should be 1, 2, 3 or 4")
-  organism<-ensure_that(organism, !is.null(.) && is.integer(.) && ((. >=1) || (. <=2)),err_desc = "organism should be 1 or 2")
-  #tissueSpecificGenes<-ensure_that(tissueSpecificGeneType, is.data.frame(.) && !is.null(.) && (nrow(.) > 0) && (ncol(.) == 3),err_desc = "tissueSpecificGenes should be a non-empty dataframe object.")
-  geneFormat<-ensure_that(geneFormat,!is.null(.) && is.integer(.) && ((. >=1) || (. <=2)),err_desc = "geneFormat should be 1 or 2")
-  tissueSpecificGeneType<-ensure_that(tissueSpecificGeneType,!is.null(.) && is.integer(.)  && ((. >=1) || (. <=4)),err_desc = "tissueSpecificGeneType should be 1, 2, 3 or 4")
-  isHomolog<-ensure_that(isHomolog,!is.null(.) && is.logical(.) ,err_desc = "isHomolog should be a TRUE or FALSE")
-  multiHypoCorrection<-ensure_that(multiHypoCorrection,!is.null(.) && is.logical(.) ,err_desc = "multiHypoCorrection should be a TRUE or FALSE")
-  #foldChangeThreshold<-ensure_that(foldChangeThreshold, is.numeric(.) && (. >=1),err_desc = "foldChangeThreshold should be a numeric value greater than or equal to 1.")
-  #maxNumberOfTissues<-ensure_that(maxNumberOfTissues, is.numeric(.) && (. >=2),err_desc = "maxNumberOfTissues should be an integer value greater than or equal to 2.")
-  #expressedGeneThreshold<-ensure_that(expressedGeneThreshold, is.numeric(.) && (. >=0),err_desc = "expressedGeneThreshold should be a numeric value greater than or equal to 0.")
+  inputGenes<-ensurer::ensure_that(inputGenes, !is.null(.) && is.vector(.),err_desc = "inputGenes should be a vector")
+  dataset<-ensurer::ensure_that(dataset, !is.null(.) && is.numeric(.) && . <=4 || . >=1,err_desc = "dataset should be 1, 2, 3 or 4")
+  organism<-ensurer::ensure_that(organism, !is.null(.) && is.numeric(.) && . <=2 || . >=1,err_desc = "organism should be 1 or 2")
+  geneFormat<-ensurer::ensure_that(geneFormat,!is.null(.) && is.numeric(.) && . <=2 || . >=1,err_desc = "geneFormat should be 1 or 2")
+  tissueSpecificGeneType<-ensurer::ensure_that(tissueSpecificGeneType,!is.null(.) && is.numeric(.)  && . <=4 || . >=1,err_desc = "tissueSpecificGeneType should be 1, 2, 3 or 4")
+  isHomolog<-ensurer::ensure_that(isHomolog,!is.null(.) && is.logical(.) ,err_desc = "isHomolog should be a TRUE or FALSE")
+  multiHypoCorrection<-ensurer::ensure_that(multiHypoCorrection,!is.null(.) && is.logical(.) ,err_desc = "multiHypoCorrection should be a TRUE or FALSE")
 
   ##Enviroment to load datasets
   env<-NULL
   ##Load gene mapping and orthologs Data
   if(dataset == 1)
   {
-    env<-loading("data/proteinAtlasV18-TSEA.Rdata")
+    env<-loading("data/proteinAtlasV18-TSEA.rda")
   }else if(dataset == 2)
   {
-    env<-loading("data/GTEx-combine-TSEA.Rdata")
+    env<-loading("data/GTEx-combine-TSEA.rda")
   }else if(dataset == 3)
   {
-    env<-loading("data/GTEx-combine-TSEA.Rdata")
+    env<-loading("data/GTEx-combine-TSEA.rda")
   }else if(dataset == 4)
   {
-    env<-loading("data/ENCODE-TSEA.Rdata")
+    env<-loading("data/ENCODE-TSEA.rda")
   }else
   {
     print("Please enter correct dataset")
@@ -213,7 +199,7 @@ tissueSpecificGeneEnrichment<-function(inputGenes = NULL,
   expressionData<-env$expressionData
   tissueDetails<-env$tissueDetails
   ##Load gene mapping and orthologs Data
-  envMapping<-loading("data/geneMappings.Rdata")
+  envMapping<-loading("data/geneMappings.rda")
 
   ##Check for organism and homolog to update geneMapping Variable
   if(organism == 1)#"Homo Sapiens")
@@ -233,16 +219,16 @@ tissueSpecificGeneEnrichment<-function(inputGenes = NULL,
   }
 
   ###Update tissueSpecificGene variable based on the group
-  if(tissueSpecificGenesType == 1)
+  if(tissueSpecificGeneType == 1)
   {
     finalTissueSpecificGenes<-env$tissueSpecificGenes
-  }else if(tissueSpecificGenesType == 2)
+  }else if(tissueSpecificGeneType == 2)
   {
     finalTissueSpecificGenes<-env$tissueSpecificGenes %>% filter(Group == "Tissue-Enriched")
-  }else if(tissueSpecificGenesType == 3)
+  }else if(tissueSpecificGeneType == 3)
   {
     finalTissueSpecificGenes<-env$tissueSpecificGenes %>% filter(Group == "Tissue-Enhanced")
-  }else if(tissueSpecificGenesType == 4)
+  }else if(tissueSpecificGeneType == 4)
   {
     finalTissueSpecificGenes<-env$tissueSpecificGenes %>% filter(Group == "Group-Enriched")
   }else
@@ -251,7 +237,6 @@ tissueSpecificGeneEnrichment<-function(inputGenes = NULL,
   }
 
   inputGenes<-toupper(inputGenes)
-
   ###Check if it is ortholog comparison or not#######
   if(isHomolog)
   {
@@ -322,7 +307,6 @@ tissueSpecificGeneEnrichment<-function(inputGenes = NULL,
 
     ####Normal Calculation
     #####Convert the Gene Id########
-    print(geneFormat)
     if(geneFormat == 2)
     {
       inputEnsemblGenes<-geneMapping %>% filter(Gene.name %in% inputGenes) %>% select(Gene)
@@ -378,42 +362,35 @@ tissueSpecificGeneEnrichment<-function(inputGenes = NULL,
 
 
 #' Calculation of tissue specific gene enrichment using hypergeometric test for custom datasets
-#'
+#' @author Ashish Jain
 #' @param inputGenes A vector containing the input genes.
 #' @param tissueSpecificGenes A dataframe object. Output from `tissueSpecificGenesRetrieval` function. Default NULL.
 #' @param tissueSpecificGeneType An integer describing type of tissue specific genes to be used, 1 for "All", 2 for "Tissue-Enriched",3 for "Tissue-Enhanced", and 4 for "Group-Enriched". Default 1.
 #' @param multiHypoCorrection Flag to carry out multiple hypothesis correction. Default TRUE.
 #' @export
-#' @return A data frame object with three columns, Gene, Tissues, and the enrichment group of the gene in the given tissue.
+#' @return A list object with three objects, first is the enrichment matrix, second is the list containing the tissue-specific genes found in the input genes, third is the vector containing not found genes.
 #' @examples
-#' library(tidyverse)
-#' data<-read.table("humanProteinAtlasV18.tsv",header = T,sep = "\t")
-#' spreadData<-data %>% spread(key = Sample,value= Value)
-#' row.names(spreadData)<-spreadData[,1]
-#' humanProteinAtlas<-spreadData[gene,c(4:ncol(spreadData))]
-#' TSgenes<-tissueSpecificGenesRetrieval(humanProteinAtlas)
-#' head(TSgenes)
 
 tissueSpecificGeneEnrichmentCustom<-function(inputGenes=NULL,tissueSpecificGenes=NULL,
                                        tissueSpecificGeneType= 1,multiHypoCorrection = TRUE)
 {
   ###Add checks for the conditions
-  inputGenes<-ensure_that(inputGenes, !is.null(.) && is.vector(.) && !is.null(.),err_desc = "inputGenes should be a null vector")
+  inputGenes<-ensurer::ensure_that(inputGenes, !is.null(.) && is.vector(.) && !is.null(.),err_desc = "inputGenes should be a null vector")
   ##Check for dataset class, rows and should not be NULL
-  tissueSpecificGenes<-ensure_that(tissueSpecificGenes,!is.null(.) && is.data.frame(.) && !is.null(.) && (nrow(.) > 0) && (ncol(.) == 3),err_desc = "tissueSpecificGenes should be a non-empty dataframe object.")
-  tissueSpecificGeneType<-ensure_that(tissueSpecificGeneType,!is.null(.) && is.integer(.) && ((. >=1) || (. <=4)),err_desc = "tissueSpecificGeneType should be 1, 2, 3 or 4")
-  multiHypoCorrection<-ensure_that(multiHypoCorrection,!is.null(.) && is.logical(.),err_desc = "multiHypoCorrection should be 0 or 1")
+  tissueSpecificGenes<-ensurer::ensure_that(tissueSpecificGenes,!is.null(.) && is.data.frame(.) && !is.null(.) && (nrow(.) > 0) && (ncol(.) == 3),err_desc = "tissueSpecificGenes should be a non-empty dataframe object.")
+  tissueSpecificGeneType<-ensurer::ensure_that(tissueSpecificGeneType,!is.null(.) && is.numeric(.)  && . <=4 || . >=1 ,err_desc = "tissueSpecificGeneType should be 1, 2, 3 or 4")
+  multiHypoCorrection<-ensurer::ensure_that(multiHypoCorrection,!is.null(.) && is.logical(.),err_desc = "multiHypoCorrection should be 0 or 1")
 
-  if(tissueSpecificGenesType == 1)
+  if(tissueSpecificGeneType == 1)
   {
     finalTissueSpecificGenes<-tissueSpecificGenes %>% filter(Group %in% c("Tissue-Enriched","Tissue-Enhanced","Group-Enriched"))
-  }else if(tissueSpecificGenesType == 2)
+  }else if(tissueSpecificGeneType == 2)
   {
     finalTissueSpecificGenes<-tissueSpecificGenes %>% filter(Group == "Tissue-Enriched")
-  }else if(tissueSpecificGenesType == 3)
+  }else if(tissueSpecificGeneType == 3)
   {
     finalTissueSpecificGenes<-tissueSpecificGenes %>% filter(Group == "Tissue-Enhanced")
-  }else if(tissueSpecificGenesType == 4)
+  }else if(tissueSpecificGeneType == 4)
   {
     finalTissueSpecificGenes<-tissueSpecificGenes %>% filter(Group == "Group-Enriched")
   }else

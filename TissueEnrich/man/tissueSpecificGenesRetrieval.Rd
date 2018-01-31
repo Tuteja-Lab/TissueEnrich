@@ -22,12 +22,6 @@ A data frame object with three columns, Gene, Tissues, and the enrichment group 
 \description{
 Calculation of tissue specific genes by using the algorithm from human protein atlas project.
 }
-\examples{
-library(tidyverse)
-data<-read.table("humanProteinAtlasV18.tsv",header = T,sep = "\\t")
-spreadData<-data \%>\% spread(key = Sample,value= Value)
-row.names(spreadData)<-spreadData[,1]
-humanProteinAtlas<-spreadData[gene,c(4:ncol(spreadData))]
-TSgenes<-tissueSpecificGenesRetrieval(humanProteinAtlas)
-head(TSgenes)
+\author{
+Ashish Jain
 }

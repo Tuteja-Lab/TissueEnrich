@@ -4,40 +4,31 @@
 \alias{tissueSpecificGeneEnrichment}
 \title{Calculation of tissue specific gene enrichment using hypergeometric test}
 \usage{
-tissueSpecificGeneEnrichment(inputGenes, tissueSpecificGenes = NULL,
-  dataset = c("Human Protein Atlas", "GTEx combine", "GTEx sub-tissue",
-  "Mouse ENCODE"), organism = c("Homo Sapiens", "Mus Musculus"),
-  tissueSpecificGeneType = c("All", "Tissue-Enriched", "Tissue-Enhanced",
-  "Group-Enriched"), geneSymbol = c("EnsemblId", "Gene Symbol"),
+tissueSpecificGeneEnrichment(inputGenes = NULL, dataset = 1, organism = 1,
+  tissueSpecificGeneType = 1, multiHypoCorrection = TRUE, geneFormat = 1,
   isHomolog = FALSE)
 }
 \arguments{
 \item{inputGenes}{A vector containing the input genes.}
 
-\item{tissueSpecificGenes}{A dataframe object. Output from `tissueSpecificGenesRetrieval` function, default NULL.}
+\item{dataset}{An integer describing the dataset to be used for enrichment, 1 for "Human Protein Atlas", 2 for "GTEx combine", 3 for "GTEx sub-tissue", 4 for "Mouse ENCODE". Default 1.}
 
-\item{dataset}{A String describing the dataset to be used for enrichment, Default "Human Protein Atlas". Other sources "GTEx combine","GTEx sub-tissue","Mouse ENCODE". Not required when providing \code{tissueSpecificGenes}.}
+\item{organism}{An integer describing the organism, 1 for "Homo Sapiens", 2 for "Mus Musculus". Default 1.}
 
-\item{organism}{A String describing the organism, default "Homo Sapiens", other "Mus Musculus". Not required when providing \code{tissueSpecificGenes}.}
+\item{tissueSpecificGeneType}{An integer describing type of tissue specific genes to be used, 1 for "All", 2 for "Tissue-Enriched",3 for "Tissue-Enhanced", and 4 for "Group-Enriched". Default 1.}
 
-\item{tissueSpecificGeneType}{A String describing type of tissue specific genes to be used, default "All", others "Tissue-Enriched","Tissue-Enhanced","Group-Enriched".}
+\item{multiHypoCorrection}{Flag to carry out multiple hypothesis correction. Default TRUE.}
 
-\item{geneSymbol}{Type of gene symbol, default "Gene Symbol", other "EnsemblId".}
+\item{geneFormat}{Type of gene symbol, 1 for "EnsemblId", 2 for "Gene Symbol". Default 1.}
 
-\item{isHomolog}{Flag for usage of orthologus genes, default FALSE. Not required when providing \code{tissueSpecificGenes}.}
+\item{isHomolog}{Flag for usage of orthologus genes, default FALSE.}
 }
 \value{
-A data frame object with three columns, Gene, Tissues, and the enrichment group of the gene in the given tissue.
+A list object with three objects, first is the enrichment matrix, second is the list containing the tissue-specific genes found in the input genes, third is the vector containing not found genes.
 }
 \description{
 Calculation of tissue specific gene enrichment using hypergeometric test
 }
-\examples{
-library(tidyverse)
-data<-read.table("humanProteinAtlasV18.tsv",header = T,sep = "\\t")
-spreadData<-data \%>\% spread(key = Sample,value= Value)
-row.names(spreadData)<-spreadData[,1]
-humanProteinAtlas<-spreadData[gene,c(4:ncol(spreadData))]
-TSgenes<-tissueSpecificGenesRetrieval(humanProteinAtlas)
-head(TSgenes)
+\author{
+Ashish Jain
 }
