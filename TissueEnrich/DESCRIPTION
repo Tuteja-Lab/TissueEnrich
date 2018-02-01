@@ -7,9 +7,14 @@ Maintainer: Ashish Jain <jain@iastate.edu>
 Description: This package is used to calculate the tissue-specific gene enrichment.
     In this package, the tissue-specific gene enrichment can be done using RNA-Seq data from Human protein atlas, GTEx, and mouse ENCODE data. This package also has the function to calculate the tissue-specific genes in the custom dataset which can be used to tissue-specific gene enrichment.
 License: GPL-3
+Depends:
+    R (>= 2.10)
 Imports: 
     tidyverse (>= 1.1.1),
-    ensurer (>= 1.1)
+    dplyr (>= 0.7.4),
+    ensurer (>= 1.1),
+    utils (>= 3.4.3),
+    plotly (>= 4.7.1)
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.0.1

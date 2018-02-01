@@ -1,6 +1,11 @@
 #ensure_numeric<-ensure_that(is.numeric(.),"Please enter numeric values.")
+library(dplyr)
 library(tidyverse)
 library(ensurer)
+library(utils)
+
+##To Supress Note
+utils::globalVariables(c("dataset",".", "%>%","Gene","Gene.name","Gene.stable.ID","Human.gene.name","Human.gene.stable.ID","Group","Tissue"))
 
 #' Calculation of tissue specific genes by using the algorithm from human protein atlas project.
 #' @author Ashish Jain
@@ -11,6 +16,10 @@ library(ensurer)
 #' @export
 #' @return A data frame object with three columns, Gene, Tissues, and the enrichment group of the gene in the given tissue.
 #' @examples
+#' data<-system.file("extdata", "combined-proteincodingGenedataCombine.txt", package = "TissueEnrich")
+#' #expressionData<-read.table(data,header=TRUE,row.names=1,sep='\t')
+#' #TSgenes<-tissueSpecificGenesRetrieval(expressionData)
+#' #head(TSgenes)
 
 
 tissueSpecificGenesRetrieval<-function(expressionData,foldChangeThreshold=5,maxNumberOfTissues=7,expressedGeneThreshold=1)
@@ -139,19 +148,19 @@ tissueSpecificGenesRetrieval<-function(expressionData,foldChangeThreshold=5,maxN
 }
 
 
-loading <- function(rdata_file)
-{
-  e <- new.env()
-  load(rdata_file, envir = e)
-  e
-}
+# loading <- function(rdata_file)
+# {
+#   e <- new.env()
+#   load(rdata_file, envir = e)
+#   e
+# }
 
 
 #' Calculation of tissue specific gene enrichment using hypergeometric test
 #'
 #' @author Ashish Jain
 #' @param inputGenes A vector containing the input genes.
-#' @param dataset An integer describing the dataset to be used for enrichment, 1 for "Human Protein Atlas", 2 for "GTEx combine", 3 for "GTEx sub-tissue", 4 for "Mouse ENCODE". Default 1.
+#' @param rnaSeqDataset An integer describing the dataset to be used for enrichment, 1 for "Human Protein Atlas", 2 for "GTEx combine", 3 for "GTEx sub-tissue", 4 for "Mouse ENCODE". Default 1.
 #' @param organism An integer describing the organism, 1 for "Homo Sapiens", 2 for "Mus Musculus". Default 1.
 #' @param tissueSpecificGeneType An integer describing type of tissue specific genes to be used, 1 for "All", 2 for "Tissue-Enriched",3 for "Tissue-Enhanced", and 4 for "Group-Enriched". Default 1.
 #' @param multiHypoCorrection Flag to carry out multiple hypothesis correction. Default TRUE.
@@ -160,16 +169,26 @@ loading <- function(rdata_file)
 #' @export
 #' @return A list object with three objects, first is the enrichment matrix, second is the list containing the tissue-specific genes found in the input genes, third is the vector containing not found genes.
 #' @examples
+#' library(tidyverse)
+#' load(file = system.file("extdata", "inputGene.rda", package = "TissueEnrich"))
+#' output<-tissueSpecificGeneEnrichment(inputGenes)
+#' library(plotly)
+#' plot_ly(output[[1]], x = ~reorder(Tissue,-Log10PValue), y = ~Log10PValue, type = "bar",
+#'   source = "select", color = ~Tissue,
+#'   hoverinfo = 'text',height = 700, text = ~paste('</br> Tissue Name: ',Tissue,
+#'   '</br> -Log10(P-Value): ', Log10PValue,
+#'   '</br> Tissue Specific Genes: ', Tissue.Specific.Genes))
+#'
 
 
 tissueSpecificGeneEnrichment<-function(inputGenes = NULL,
-                                       dataset=1,#c("Human Protein Atlas","GTEx combine","GTEx sub-tissue","Mouse ENCODE"),
+                                       rnaSeqDataset=1,#c("Human Protein Atlas","GTEx combine","GTEx sub-tissue","Mouse ENCODE"),
                                        organism=1,tissueSpecificGeneType=1,multiHypoCorrection=TRUE,
                                         geneFormat=1,isHomolog=FALSE)
 {
   ###Add checks for the conditions
   inputGenes<-ensurer::ensure_that(inputGenes, !is.null(.) && is.vector(.),err_desc = "inputGenes should be a vector")
-  dataset<-ensurer::ensure_that(dataset, !is.null(.) && is.numeric(.) && . <=4 || . >=1,err_desc = "dataset should be 1, 2, 3 or 4")
+  rnaSeqDataset<-ensurer::ensure_that(rnaSeqDataset, !is.null(.) && is.numeric(.) && . <=4 || . >=1,err_desc = "rnaSeqDataset should be 1, 2, 3 or 4")
   organism<-ensurer::ensure_that(organism, !is.null(.) && is.numeric(.) && . <=2 || . >=1,err_desc = "organism should be 1 or 2")
   geneFormat<-ensurer::ensure_that(geneFormat,!is.null(.) && is.numeric(.) && . <=2 || . >=1,err_desc = "geneFormat should be 1 or 2")
   tissueSpecificGeneType<-ensurer::ensure_that(tissueSpecificGeneType,!is.null(.) && is.numeric(.)  && . <=4 || . >=1,err_desc = "tissueSpecificGeneType should be 1, 2, 3 or 4")
@@ -177,63 +196,70 @@ tissueSpecificGeneEnrichment<-function(inputGenes = NULL,
   multiHypoCorrection<-ensurer::ensure_that(multiHypoCorrection,!is.null(.) && is.logical(.) ,err_desc = "multiHypoCorrection should be a TRUE or FALSE")
 
   ##Enviroment to load datasets
-  env<-NULL
+  #env<-loading("data/combine-expression.rda")
   ##Load gene mapping and orthologs Data
-  if(dataset == 1)
+  if(rnaSeqDataset == 1)
   {
-    env<-loading("data/proteinAtlasV18-TSEA.rda")
-  }else if(dataset == 2)
+    expressionDataLocal<-dataset$`Protein-Atlas`$expressionData
+    tissueDetails<-dataset$`Protein-Atlas`$tissueDetails
+    tissueSpecificGenes<-dataset$`Protein-Atlas`$tissueSpecificGenes
+  }else if(rnaSeqDataset == 2)
   {
-    env<-loading("data/GTEx-combine-TSEA.rda")
-  }else if(dataset == 3)
+    expressionDataLocal<-dataset$`GTEx-Combine`$expressionData
+    tissueDetails<-dataset$`GTEx-Combine`$tissueDetails
+    tissueSpecificGenes<-dataset$`GTEx-Combine`$tissueSpecificGenes
+  }else if(rnaSeqDataset == 3)
   {
-    env<-loading("data/GTEx-combine-TSEA.rda")
-  }else if(dataset == 4)
+    expressionDataLocal<-dataset$`GTEx-Subtissues`$expressionData
+    tissueDetails<-dataset$`GTEx-Subtissues`$tissueDetails
+    tissueSpecificGenes<-dataset$`GTEx-Subtissues`$tissueSpecificGenes
+  }else if(rnaSeqDataset == 4)
   {
-    env<-loading("data/ENCODE-TSEA.rda")
+    expressionDataLocal<-dataset$`ENCODE Dataset`$expressionData
+    tissueDetails<-dataset$`ENCODE Dataset`$tissueDetails
+    tissueSpecificGenes<-dataset$`ENCODE Dataset`$tissueSpecificGenes
   }else
   {
-    print("Please enter correct dataset")
+    stop("Please enter correct dataset id.",call. = FALSE)
+    #print("Please enter correct dataset")
   }
 
-  expressionData<-env$expressionData
-  tissueDetails<-env$tissueDetails
-  ##Load gene mapping and orthologs Data
-  envMapping<-loading("data/geneMappings.rda")
 
   ##Check for organism and homolog to update geneMapping Variable
   if(organism == 1)#"Homo Sapiens")
   {
-    geneMapping<-envMapping$humanGeneMapping
+    geneMapping<-dataset$humanGeneMapping
   }else if(organism == 2)#"Mus Musculus")
   {
-    geneMapping<-envMapping$mouseGeneMapping
+    geneMapping<-dataset$mouseGeneMapping
   }else
   {
-    print("Please enter correct dataset")
+    stop("Please enter correct organism.",call. = FALSE)
+    #print("Please enter correct dataset")
   }
 
   if(isHomolog)
   {
-    geneMapping<-envMapping$mouseHumanOrthologs
+    geneMapping<-dataset$mouseHumanOrthologs
   }
 
   ###Update tissueSpecificGene variable based on the group
   if(tissueSpecificGeneType == 1)
   {
-    finalTissueSpecificGenes<-env$tissueSpecificGenes
+    finalTissueSpecificGenes<-tissueSpecificGenes
   }else if(tissueSpecificGeneType == 2)
   {
-    finalTissueSpecificGenes<-env$tissueSpecificGenes %>% filter(Group == "Tissue-Enriched")
+    finalTissueSpecificGenes<-tissueSpecificGenes %>% dplyr::filter(Group == "Tissue-Enriched")
   }else if(tissueSpecificGeneType == 3)
   {
-    finalTissueSpecificGenes<-env$tissueSpecificGenes %>% filter(Group == "Tissue-Enhanced")
+    finalTissueSpecificGenes<-tissueSpecificGenes %>% dplyr::filter(Group == "Tissue-Enhanced")
   }else if(tissueSpecificGeneType == 4)
   {
-    finalTissueSpecificGenes<-env$tissueSpecificGenes %>% filter(Group == "Group-Enriched")
+    finalTissueSpecificGenes<-tissueSpecificGenes %>% dplyr::filter(Group == "Group-Enriched")
   }else
   {
-    print("Something is wrong!")
+    stop("Tissue specific gene type is not correct.",call. = FALSE)
+    #print("Something is wrong!")
   }
 
   inputGenes<-toupper(inputGenes)
@@ -247,15 +273,15 @@ tissueSpecificGeneEnrichment<-function(inputGenes = NULL,
     {
       if(geneFormat == 2)
       {
-        inputEnsemblGenes<-geneMapping %>% filter(Human.gene.name %in% inputGenes) %>% select(Gene.stable.ID)
+        inputEnsemblGenes<-geneMapping %>% dplyr::filter(Human.gene.name %in% inputGenes) %>% dplyr::select(Gene.stable.ID)
       }else
       {
-        inputEnsemblGenes<-geneMapping %>% filter(Human.gene.stable.ID %in% inputGenes) %>% select(Gene.stable.ID)
+        inputEnsemblGenes<-geneMapping %>% dplyr::filter(Human.gene.stable.ID %in% inputGenes) %>% dplyr::select(Gene.stable.ID)
       }
       inputEnsemblGenes<-as.character(inputEnsemblGenes$Gene.stable.ID)
 
       ##Updating the geneMapping
-      geneMappingForCurrentDataset<-geneMapping %>% filter(Gene.stable.ID %in% row.names(expressionData))
+      geneMappingForCurrentDataset<-geneMapping %>% dplyr::filter(Gene.stable.ID %in% row.names(expressionDataLocal))
 
       #####Check for genes which are not there in our list########
       if(length(inputGenes) != length(intersect(as.character(geneMappingForCurrentDataset$Gene.stable.ID),inputEnsemblGenes)))
@@ -268,23 +294,23 @@ tissueSpecificGeneEnrichment<-function(inputGenes = NULL,
           genesNotFoundList<-base::setdiff(inputGenes,as.character(geneMappingForCurrentDataset$Human.gene.stable.ID))
         }
         genesNotFound<-c(length(genesNotFoundList),genesNotFoundList)
-        inputEnsemblGenes<-intersect(row.names(expressionData),inputEnsemblGenes)
+        inputEnsemblGenes<-intersect(row.names(expressionDataLocal),inputEnsemblGenes)
       }
-      geneMappingForCurrentDataset<-geneMappingForCurrentDataset %>% select(Gene.stable.ID,Gene.name)
+      geneMappingForCurrentDataset<-geneMappingForCurrentDataset %>% dplyr::select(Gene.stable.ID,Gene.name)
       colnames(geneMappingForCurrentDataset)<-c("Gene","Gene.name")
 
     }else
     {
       if(geneFormat == 2)
       {
-        inputEnsemblGenes<-geneMapping %>% filter(Gene.name %in% inputGenes) %>% select(Human.gene.stable.ID)
+        inputEnsemblGenes<-geneMapping %>% dplyr::filter(Gene.name %in% inputGenes) %>% dplyr::select(Human.gene.stable.ID)
       }else
       {
-        inputEnsemblGenes<-geneMapping %>% filter(Gene.stable.ID %in% inputGenes) %>% select(Human.gene.stable.ID)
+        inputEnsemblGenes<-geneMapping %>% dplyr::filter(Gene.stable.ID %in% inputGenes) %>% dplyr::select(Human.gene.stable.ID)
       }
       inputEnsemblGenes<-as.character(inputEnsemblGenes$Human.gene.stable.ID)
       ##Updating the geneMapping
-      geneMappingForCurrentDataset<-geneMapping %>% filter(Human.gene.stable.ID %in% row.names(expressionData))
+      geneMappingForCurrentDataset<-geneMapping %>% dplyr::filter(Human.gene.stable.ID %in% row.names(expressionDataLocal))
       #####Check for genes which are not there in our list########
       if(length(inputGenes) != length(intersect(as.character(geneMappingForCurrentDataset$Human.gene.stable.ID),inputEnsemblGenes)))
       {
@@ -296,27 +322,27 @@ tissueSpecificGeneEnrichment<-function(inputGenes = NULL,
           genesNotFoundList<-base::setdiff(inputGenes,as.character(geneMappingForCurrentDataset$Gene.stable.ID))
         }
         genesNotFound<-c(length(genesNotFoundList),genesNotFoundList)
-        inputEnsemblGenes<-intersect(row.names(expressionData),inputEnsemblGenes)
+        inputEnsemblGenes<-intersect(row.names(expressionDataLocal),inputEnsemblGenes)
       }
-      geneMappingForCurrentDataset<-geneMappingForCurrentDataset %>% select(Human.gene.stable.ID,Human.gene.name)
+      geneMappingForCurrentDataset<-geneMappingForCurrentDataset %>% dplyr::select(Human.gene.stable.ID,Human.gene.name)
       colnames(geneMappingForCurrentDataset)<-c("Gene","Gene.name")
     }
 
-    finalTissueSpecificGenes<-finalTissueSpecificGenes %>% filter(Gene %in% geneMappingForCurrentDataset$Gene)
+    finalTissueSpecificGenes<-finalTissueSpecificGenes %>% dplyr::filter(Gene %in% geneMappingForCurrentDataset$Gene)
   }else{
 
     ####Normal Calculation
     #####Convert the Gene Id########
     if(geneFormat == 2)
     {
-      inputEnsemblGenes<-geneMapping %>% filter(Gene.name %in% inputGenes) %>% select(Gene)
+      inputEnsemblGenes<-geneMapping %>% dplyr::filter(Gene.name %in% inputGenes) %>% dplyr::select(Gene)
       inputEnsemblGenes<-as.character(inputEnsemblGenes$Gene)
     }else
     {
       inputEnsemblGenes<-inputGenes
     }
     ##Updating the geneMapping
-    geneMappingForCurrentDataset<-geneMapping %>% filter(Gene %in% row.names(expressionData))
+    geneMappingForCurrentDataset<-geneMapping %>% dplyr::filter(Gene %in% row.names(expressionDataLocal))
     #####Check for genes which are not there in our list########
     genesNotFound<-c()
     if(length(inputGenes) != length(intersect(as.character(geneMappingForCurrentDataset$Gene),inputEnsemblGenes)))
@@ -328,7 +354,7 @@ tissueSpecificGeneEnrichment<-function(inputGenes = NULL,
       {
         genesNotFound<-base::setdiff(inputGenes,as.character(geneMappingForCurrentDataset$Gene))
       }
-      inputEnsemblGenes<-intersect(row.names(expressionData),inputEnsemblGenes)
+      inputEnsemblGenes<-intersect(row.names(expressionDataLocal),inputEnsemblGenes)
     }
   }
 
@@ -339,11 +365,11 @@ tissueSpecificGeneEnrichment<-function(inputGenes = NULL,
   overlapTissueGenesList<-list()
   for(tissue in tissueNames)
   {
-    tissueGenes<-finalTissueSpecificGenes %>% filter(Tissue==tissue)
+    tissueGenes<-finalTissueSpecificGenes %>% dplyr::filter(Tissue==tissue)
     overlapGenes<-length(intersect(tissueGenes$Gene,inputEnsemblGenes))
     overlapTissueGenesList[[tissue]]<-intersect(tissueGenes$Gene,inputEnsemblGenes)
     GenesInTissue<-nrow(tissueGenes)
-    pValue<-phyper(overlapGenes-1,GenesInTissue,nrow(geneMappingForCurrentDataset)-GenesInTissue,length(inputEnsemblGenes),lower.tail = F)
+    pValue<-stats::phyper(overlapGenes-1,GenesInTissue,nrow(geneMappingForCurrentDataset)-GenesInTissue,length(inputEnsemblGenes),lower.tail = F)
     pValueList<-c(pValueList,pValue)
     overlapGenesList<-c(overlapGenesList,overlapGenes)
   }
@@ -351,7 +377,7 @@ tissueSpecificGeneEnrichment<-function(inputGenes = NULL,
   if(multiHypoCorrection)
   {
     ##Multiple hypothesis correction
-    pValueList<-p.adjust(pValueList,method = "BH")
+    pValueList<-stats::p.adjust(pValueList,method = "BH")
   }
   pValueList<-(-log10(pValueList))
 
@@ -383,19 +409,20 @@ tissueSpecificGeneEnrichmentCustom<-function(inputGenes=NULL,tissueSpecificGenes
 
   if(tissueSpecificGeneType == 1)
   {
-    finalTissueSpecificGenes<-tissueSpecificGenes %>% filter(Group %in% c("Tissue-Enriched","Tissue-Enhanced","Group-Enriched"))
+    finalTissueSpecificGenes<-tissueSpecificGenes %>% dplyr::filter(Group %in% c("Tissue-Enriched","Tissue-Enhanced","Group-Enriched"))
   }else if(tissueSpecificGeneType == 2)
   {
-    finalTissueSpecificGenes<-tissueSpecificGenes %>% filter(Group == "Tissue-Enriched")
+    finalTissueSpecificGenes<-tissueSpecificGenes %>% dplyr::filter(Group == "Tissue-Enriched")
   }else if(tissueSpecificGeneType == 3)
   {
-    finalTissueSpecificGenes<-tissueSpecificGenes %>% filter(Group == "Tissue-Enhanced")
+    finalTissueSpecificGenes<-tissueSpecificGenes %>% dplyr::filter(Group == "Tissue-Enhanced")
   }else if(tissueSpecificGeneType == 4)
   {
-    finalTissueSpecificGenes<-tissueSpecificGenes %>% filter(Group == "Group-Enriched")
+    finalTissueSpecificGenes<-tissueSpecificGenes %>% dplyr::filter(Group == "Group-Enriched")
   }else
   {
-    print("Something is wrong!")
+    stop("Tissue specific gene type is not correct.",call. = FALSE)
+    #print("Something is wrong!")
   }
 
   totalGenes<-as.character(unique(tissueSpecificGenes$Gene))
@@ -404,24 +431,24 @@ tissueSpecificGeneEnrichmentCustom<-function(inputGenes=NULL,tissueSpecificGenes
   inputEnsemblGenes<-intersect(inputGenes,totalGenes)
 
   ####Calculate the Hypergeometric P-Value#########
-  tissueNames<-as.character(tissueDetails$RName)
+  tissueNames<-as.character(unique(finalTissueSpecificGenes$Tissue))
   pValueList<-c()
   overlapGenesList<-c()
   overlapTissueGenesList<-list()
   for(tissue in tissueNames)
   {
-    tissueGenes<-finalTissueSpecificGenes %>% filter(Tissue==tissue)
+    tissueGenes<-finalTissueSpecificGenes %>% dplyr::filter(Tissue==tissue)
     overlapGenes<-length(intersect(tissueGenes$Gene,inputEnsemblGenes))
     overlapTissueGenesList[[tissue]]<-intersect(tissueGenes$Gene,inputEnsemblGenes)
     GenesInTissue<-nrow(tissueGenes)
-    pValue<-phyper(overlapGenes-1,GenesInTissue,length(totalGenes)-GenesInTissue,length(inputEnsemblGenes),lower.tail = F)
+    pValue<-stats::phyper(overlapGenes-1,GenesInTissue,length(totalGenes)-GenesInTissue,length(inputEnsemblGenes),lower.tail = F)
     pValueList<-c(pValueList,pValue)
     overlapGenesList<-c(overlapGenesList,overlapGenes)
   }
   if(multiHypoCorrection)
   {
     ##Multiple hypothesis correction
-    pValueList<-p.adjust(pValueList,method = "BH")
+    pValueList<-stats::p.adjust(pValueList,method = "BH")
   }
   pValueList<-(-log10(pValueList))
   output<-data.frame(Tissue=tissueNames,Log10PValue=pValueList,Tissue.Specific.Genes=overlapGenesList)
