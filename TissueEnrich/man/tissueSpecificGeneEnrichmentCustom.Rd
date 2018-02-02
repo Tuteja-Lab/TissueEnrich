@@ -18,11 +18,27 @@ tissueSpecificGeneEnrichmentCustom(inputGenes = NULL,
 \item{multiHypoCorrection}{Flag to carry out multiple hypothesis correction. Default TRUE.}
 }
 \value{
-A list object with three objects, first is the enrichment matrix, second is the list containing the tissue-specific genes found in the input genes, third is the vector containing not found genes.
+A list object with three objects, first is the enrichment matrix, second is the list containing the tissue-specific genes found in the input genes, third is the vector containing genes not found in our data.
 }
 \description{
 Calculation of tissue specific gene enrichment using hypergeometric test for custom datasets
 }
+\examples{
+library(tidyverse)
+data<-system.file("extdata", "combined-proteincodingGenedataCombine.txt", package = "TissueEnrich")
+expressionData<-read.table(data,header=TRUE,row.names=1,sep='\\t')
+TSgenes<-tissueSpecificGenesRetrieval(expressionData)
+head(TSgenes)
+genes<-system.file("extdata", "inputGenesEnsembl.txt", package = "TissueEnrich")
+inputGenes<-scan(genes,character())
+output<-tissueSpecificGeneEnrichmentCustom(inputGenes,TSgenes)
+library(plotly)
+plot_ly(output[[1]], x = ~reorder(Tissue,-Log10PValue), y = ~Log10PValue, type = "bar",
+  source = "select", color = ~Tissue,
+  hoverinfo = 'text',height = 700, text = ~paste('</br> Tissue Name: ',Tissue,
+  '</br> -Log10(P-Value): ', Log10PValue,
+  '</br> Tissue Specific Genes: ', Tissue.Specific.Genes))
+}
 \author{
-Ashish Jain
+Ashish Jain, Geetu Tuteja
 }

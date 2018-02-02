@@ -4,14 +4,14 @@
 \alias{tissueSpecificGeneEnrichment}
 \title{Calculation of tissue specific gene enrichment using hypergeometric test}
 \usage{
-tissueSpecificGeneEnrichment(inputGenes = NULL, dataset = 1, organism = 1,
-  tissueSpecificGeneType = 1, multiHypoCorrection = TRUE, geneFormat = 1,
-  isHomolog = FALSE)
+tissueSpecificGeneEnrichment(inputGenes = NULL, rnaSeqDataset = 1,
+  organism = 1, tissueSpecificGeneType = 1, multiHypoCorrection = TRUE,
+  geneFormat = 1, isHomolog = FALSE)
 }
 \arguments{
 \item{inputGenes}{A vector containing the input genes.}
 
-\item{dataset}{An integer describing the dataset to be used for enrichment, 1 for "Human Protein Atlas", 2 for "GTEx combine", 3 for "GTEx sub-tissue", 4 for "Mouse ENCODE". Default 1.}
+\item{rnaSeqDataset}{An integer describing the dataset to be used for enrichment, 1 for "Human Protein Atlas", 2 for "GTEx combine", 3 for "GTEx sub-tissue", 4 for "Mouse ENCODE". Default 1.}
 
 \item{organism}{An integer describing the organism, 1 for "Homo Sapiens", 2 for "Mus Musculus". Default 1.}
 
@@ -24,11 +24,23 @@ tissueSpecificGeneEnrichment(inputGenes = NULL, dataset = 1, organism = 1,
 \item{isHomolog}{Flag for usage of orthologus genes, default FALSE.}
 }
 \value{
-A list object with three objects, first is the enrichment matrix, second is the list containing the tissue-specific genes found in the input genes, third is the vector containing not found genes.
+A list object with three objects, first is the enrichment matrix, second is the list containing the tissue-specific genes found in the input genes, third is the vector containing genes not found in our data.
 }
 \description{
 Calculation of tissue specific gene enrichment using hypergeometric test
 }
+\examples{
+library(tidyverse)
+genes<-system.file("extdata", "inputGenes.txt", package = "TissueEnrich")
+inputGenes<-scan(genes,character())
+output<-tissueSpecificGeneEnrichment(inputGenes,geneFormat=2)
+library(plotly)
+plot_ly(output[[1]], x = ~reorder(Tissue,-Log10PValue), y = ~Log10PValue, type = "bar",
+  source = "select", color = ~Tissue,
+  hoverinfo = 'text',height = 700, text = ~paste('</br> Tissue Name: ',Tissue,
+  '</br> -Log10(P-Value): ', Log10PValue,
+  '</br> Tissue Specific Genes: ', Tissue.Specific.Genes))
+}
 \author{
-Ashish Jain
+Ashish Jain, Geetu Tuteja
 }

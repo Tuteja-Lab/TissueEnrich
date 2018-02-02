@@ -1,18 +1,19 @@
-#' Prices of 50,000 round cut diamonds.
+#' Processed data for GTEx, Human Protein Atlas, and Mouse ENCODE
 #'
-#' A dataset containing the prices and other attributes of almost 54,000
-#' diamonds.
-#'
-#' @format A data frame with 53940 rows and 10 variables:
+#' A list object containing the processed data from GTEx, Human Protein Atlas, and Mouse ENCODE
+#' containing the expression values, calculated tissue specific genes, and information about
+#' the tissues.
+#' @author Ashish Jain, Geetu Tuteja
+#' @format A list object containing 7 objects:
 #' \describe{
-#'   \item{Protein-Atlas}{price, in US dollars}
-#'   \item{GTEx-Combine}{weight of the diamond, in carats}
-#'   \item{GTEx-Subtissues}{weight of the diamond, in carats}
-#'   \item{ENCODE Dataset}{weight of the diamond, in carats}
-#'   \item{mouseGeneMapping}{weight of the diamond, in carats}
-#'   \item{mouseHumanOrthologs}{weight of the diamond, in carats}
-#'   \item{humanGeneMapping}{weight of the diamond, in carats}
-#'
+#'   \item{Protein-Atlas}{Human Protein atlas processed data with normalized expression values (in 35 tissues), tissue details, and tissue specific genes.}
+#'   \item{GTEx-Combine}{GTEx-combine processed data with normalized expression values (in 29 tissues), tissue details, and tissue specific genes.}
+#'   \item{GTEx-Subtissues}{GTEx-subtissues processed data with normalized expression values (in 50 tissues), tissue details, and tissue specific genes.}
+#'   \item{ENCODE Dataset}{Human Protein atlas processed data with normalized expression values (in 17 tissues), tissue details, and tissue specific genes.}
+#'   \item{mouseGeneMapping}{Ensembl Id and Gene symbol mapping dataframe for mouse protein coding genes.}
+#'   \item{mouseHumanOrthologs}{One to one human and mouse orthologs mapping.}
+#'   \item{humanGeneMapping}{Ensembl Id and Gene symbol mapping dataframe for human protein coding genes.}
 #' }
-#' @source \url{http://www.diamondse.info/}
+#'
+#' @references
 "dataset"

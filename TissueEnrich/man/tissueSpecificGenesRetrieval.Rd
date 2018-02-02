@@ -22,6 +22,12 @@ A data frame object with three columns, Gene, Tissues, and the enrichment group 
 \description{
 Calculation of tissue specific genes by using the algorithm from human protein atlas project.
 }
+\examples{
+data<-system.file("extdata", "combined-proteincodingGenedataCombine.txt", package = "TissueEnrich")
+#expressionData<-read.table(data,header=TRUE,row.names=1,sep='\\t')
+#TSgenes<-tissueSpecificGenesRetrieval(expressionData)
+#head(TSgenes)
+}
 \author{
-Ashish Jain
+Ashish Jain, Geetu Tuteja
 }
