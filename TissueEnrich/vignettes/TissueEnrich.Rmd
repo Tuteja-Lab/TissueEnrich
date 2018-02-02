@@ -3,6 +3,8 @@ title: "TissueEnrich"
 author: "Ashish Jain, Geetu Tuteja"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
+fig_width: 6 
+fig_height: 4 
 vignette: >
   %\VignetteIndexEntry{TissueEnrich}
   %\VignetteEngine{knitr::rmarkdown}
@@ -15,7 +17,8 @@ knitr::opts_chunk$set(
   comment = "#>",
   echo = TRUE,
   message = FALSE,
-  warning = FALSE
+  warning = FALSE,
+  fig.width=7, fig.height=5
 )
 ```
 
@@ -69,10 +72,13 @@ output<-tissueSpecificGeneEnrichment(inputGenes = inputGenes,geneFormat=2)
 The output from this function is a list object consist of three objects. The first object is a dataframe containing the -Log10(P-Value) for each tissue in the dataset. This dataframe can be used to plot a histogram as shown below.
 
 ```{r eval=TRUE,warning=FALSE}
-library(plotly)
-plot_ly(output[[1]], x = ~reorder(Tissue,-Log10PValue), y = ~Log10PValue, type = "bar", source = "select", color = ~Tissue, hoverinfo = 'text',width = "100%",height = 700,
-            text = ~paste('</br> Tissue Name: ',
-                          Tissue,'</br> -Log10(P-Value): ', Log10PValue,'</br> Tissue Specific Genes: ', Tissue.Specific.Genes)) %>% layout(autosize = TRUE,margin = list(b = 150),xaxis = list(title = "",tickangle = 315), yaxis = list(title = "-Log10(P-Value)"),showlegend = FALSE)
+ggplot(output[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tissue.Specific.Genes,fill = Tissue))+
+      geom_bar(stat = 'identity')+
+      labs(x='', y = '-LOG10(P-Value)')+
+      theme_bw()+
+      theme(legend.position="none")+
+      theme(plot.title = element_text(hjust = 0.5,size = 20),axis.title = element_text(size=15))+
+      theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),panel.grid.major= element_blank(),panel.grid.minor = element_blank())
 ```
 
 The second object is a list containing the tissue-specific genes found in each tissue. For example, below we are showing the tissue-specific genes in placenta tissue.
@@ -90,13 +96,17 @@ print(output[[3]])
 
 This function also have a functionality in which a mouse dataset can be used to calculate tissue specific gene enrichment in the input human gene list or vice-a-versa. There is a `isHomolog` flag in the function which need to be set `TRUE` in case of using the functionality. We use one to one protein coding homologs to map the human genes to mouse genes and vice-a-versa using Ensembl V91 database. For example, the above used human input genes can be used with Mouse ENCODE dataset.
 
-```{r echo=FALSE}
+```{r eval=FALSE}
 genes<-system.file("extdata", "inputGenes.txt", package = "TissueEnrich")
 inputGenes<-scan(genes,character())
 output<-tissueSpecificGeneEnrichment(inputGenes = inputGenes,rnaSeqDataset = 4, organism = 1, geneFormat=2,isHomolog = TRUE)
-plot_ly(output[[1]], x = ~reorder(Tissue,-Log10PValue), y = ~Log10PValue, type = "bar", source = "select", color = ~Tissue, hoverinfo = 'text',width = "100%",height = 700,
-            text = ~paste('</br> Tissue Name: ',
-                          Tissue,'</br> -Log10(P-Value): ', Log10PValue,'</br> Tissue Specific Genes: ', Tissue.Specific.Genes)) %>% layout(autosize = TRUE,margin = list(b = 150),xaxis = list(title = "",tickangle = 315), yaxis = list(title = "-Log10(P-Value)"),showlegend = FALSE)
+ggplot(output[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tissue.Specific.Genes,fill = Tissue))+
+      geom_bar(stat = 'identity')+
+      labs(x='', y = '-LOG10(P-Value)')+
+      theme_bw()+
+      theme(legend.position="none")+
+      theme(plot.title = element_text(hjust = 0.5,size = 20),axis.title = element_text(size=15))+
+      theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),panel.grid.major= element_blank(),panel.grid.minor = element_blank())
 ```
 
 
@@ -111,9 +121,13 @@ TSgenes<-tissueSpecificGenesRetrieval(expressionData)
 genes<-system.file("extdata", "inputGenesEnsembl.txt", package = "TissueEnrich")
 inputGenes<-scan(genes,character())
 output<-tissueSpecificGeneEnrichmentCustom(inputGenes,TSgenes)
-plot_ly(output[[1]], x = ~reorder(Tissue,-Log10PValue), y = ~Log10PValue, type = "bar", source = "select", color = ~Tissue, hoverinfo = 'text',width = "100%",height = 700,
-            text = ~paste('</br> Tissue Name: ',
-                          Tissue,'</br> -Log10(P-Value): ', Log10PValue,'</br> Tissue Specific Genes: ', Tissue.Specific.Genes)) %>% layout(autosize = TRUE,margin = list(b = 150),xaxis = list(title = "",tickangle = 315), yaxis = list(title = "-Log10(P-Value)"),showlegend = FALSE)
+ggplot(output[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tissue.Specific.Genes,fill = Tissue))+
+      geom_bar(stat = 'identity')+
+      labs(x='', y = '-LOG10(P-Value)')+
+      theme_bw()+
+      theme(legend.position="none")+
+      theme(plot.title = element_text(hjust = 0.5,size = 20),axis.title = element_text(size=15))+
+      theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),panel.grid.major= element_blank(),panel.grid.minor = element_blank())
 ```
 
 

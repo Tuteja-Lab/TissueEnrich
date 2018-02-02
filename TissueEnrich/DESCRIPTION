@@ -18,8 +18,7 @@ Imports:
     tidyverse (>= 1.1.1),
     dplyr (>= 0.7.3),
     ensurer (>= 1.1),
-    utils (>= 3.4.1),
-    plotly (>= 4.7.1)
+    utils (>= 3.4.1)
 Suggests: knitr, rmarkdown, RUnit 
 Encoding: UTF-8
 biocViews: GeneSetEnrichment, GeneExpression, ComparativeGenomics, Sequencing, SingleCell

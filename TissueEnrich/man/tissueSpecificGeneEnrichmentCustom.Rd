@@ -32,12 +32,14 @@ head(TSgenes)
 genes<-system.file("extdata", "inputGenesEnsembl.txt", package = "TissueEnrich")
 inputGenes<-scan(genes,character())
 output<-tissueSpecificGeneEnrichmentCustom(inputGenes,TSgenes)
-library(plotly)
-plot_ly(output[[1]], x = ~reorder(Tissue,-Log10PValue), y = ~Log10PValue, type = "bar",
-  source = "select", color = ~Tissue,
-  hoverinfo = 'text',height = 700, text = ~paste('</br> Tissue Name: ',Tissue,
-  '</br> -Log10(P-Value): ', Log10PValue,
-  '</br> Tissue Specific Genes: ', Tissue.Specific.Genes))
+#Plotting the P-Values
+ggplot(output[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tissue.Specific.Genes,fill = Tissue))+
+geom_bar(stat = 'identity')+
+labs(x='', y = '-LOG10(P-Value)')+
+theme_bw()+
+theme(legend.position="none")+
+theme(plot.title = element_text(hjust = 0.5,size = 20),axis.title = element_text(size=15))+
+theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),panel.grid.major= element_blank(),panel.grid.minor = element_blank())
 }
 \author{
 Ashish Jain, Geetu Tuteja
