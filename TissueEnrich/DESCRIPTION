@@ -13,8 +13,7 @@ Description: This package is used to calculate the tissue-specific gene enrichme
 License: Artistic-2.0
 VignetteBuilder: knitr
 Depends:
-    R (>= 3.4)
-Imports:
+    R (>= 3.4),
     dplyr (>= 0.7.3),
     ensurer (>= 1.1),
     utils (>= 3.4.1),
