@@ -24,7 +24,8 @@ A list object with three objects, first is the enrichment matrix, second is the 
 Calculation of tissue specific gene enrichment using hypergeometric test for custom datasets
 }
 \examples{
-library(tidyverse)
+library(dplyr)
+library(ggplot2)
 data<-system.file("extdata", "combined-proteincodingGenedataCombine.txt", package = "TissueEnrich")
 expressionData<-read.table(data,header=TRUE,row.names=1,sep='\\t')
 TSgenes<-tissueSpecificGenesRetrieval(expressionData)

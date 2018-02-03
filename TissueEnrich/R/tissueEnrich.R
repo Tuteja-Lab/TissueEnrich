@@ -1,6 +1,5 @@
 #ensure_numeric<-ensure_that(is.numeric(.),"Please enter numeric values.")
 library(dplyr)
-library(tidyverse)
 library(ensurer)
 library(utils)
 
@@ -169,7 +168,8 @@ tissueSpecificGenesRetrieval<-function(expressionData,foldChangeThreshold=5,maxN
 #' @export
 #' @return A list object with three objects, first is the enrichment matrix, second is the list containing the tissue-specific genes found in the input genes, third is the vector containing genes not found in our data.
 #' @examples
-#' library(tidyverse)
+#' library(dplyr)
+#' library(ggplot2)
 #' genes<-system.file("extdata", "inputGenes.txt", package = "TissueEnrich")
 #' inputGenes<-scan(genes,character())
 #' output<-tissueSpecificGeneEnrichment(inputGenes,geneFormat=2)
@@ -410,7 +410,8 @@ tissueSpecificGeneEnrichment<-function(inputGenes = NULL,
 #' @export
 #' @return A list object with three objects, first is the enrichment matrix, second is the list containing the tissue-specific genes found in the input genes, third is the vector containing genes not found in our data.
 #' @examples
-#' library(tidyverse)
+#' library(dplyr)
+#' library(ggplot2)
 #' data<-system.file("extdata", "combined-proteincodingGenedataCombine.txt", package = "TissueEnrich")
 #' expressionData<-read.table(data,header=TRUE,row.names=1,sep='\t')
 #' TSgenes<-tissueSpecificGenesRetrieval(expressionData)

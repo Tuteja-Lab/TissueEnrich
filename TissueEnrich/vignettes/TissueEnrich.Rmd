@@ -63,7 +63,7 @@ The above datasets are also processed and calculation of tissue-specific has bee
 
 ```{r eval=TRUE,warning=FALSE}
 library(TissueEnrich)
-library(tidyverse)
+library(dplyr)
 genes<-system.file("extdata", "inputGenes.txt", package = "TissueEnrich")
 inputGenes<-scan(genes,character())
 output<-tissueSpecificGeneEnrichment(inputGenes = inputGenes,geneFormat=2)
@@ -72,6 +72,7 @@ output<-tissueSpecificGeneEnrichment(inputGenes = inputGenes,geneFormat=2)
 The output from this function is a list object consist of three objects. The first object is a dataframe containing the -Log10(P-Value) for each tissue in the dataset. This dataframe can be used to plot a histogram as shown below.
 
 ```{r eval=TRUE,warning=FALSE}
+library(ggplot2)
 ggplot(output[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tissue.Specific.Genes,fill = Tissue))+
       geom_bar(stat = 'identity')+
       labs(x='', y = '-LOG10(P-Value)')+

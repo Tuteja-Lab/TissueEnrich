@@ -30,7 +30,8 @@ A list object with three objects, first is the enrichment matrix, second is the 
 Calculation of tissue specific gene enrichment using hypergeometric test
 }
 \examples{
-library(tidyverse)
+library(dplyr)
+library(ggplot2)
 genes<-system.file("extdata", "inputGenes.txt", package = "TissueEnrich")
 inputGenes<-scan(genes,character())
 output<-tissueSpecificGeneEnrichment(inputGenes,geneFormat=2)
