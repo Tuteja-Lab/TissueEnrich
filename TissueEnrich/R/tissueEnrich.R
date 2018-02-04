@@ -270,6 +270,7 @@ tissueSpecificGeneEnrichment<-function(inputGenes = NULL,
   }
 
   inputGenes<-toupper(inputGenes)
+  inputGenes<-unique(inputGenes)
   ###Check if it is ortholog comparison or not#######
   if(isHomolog)
   {
@@ -456,6 +457,7 @@ tissueSpecificGeneEnrichmentCustom<-function(inputGenes=NULL,tissueSpecificGenes
     #print("Something is wrong!")
   }
 
+  inputGenes<-unique(inputGenes)
   totalGenes<-as.character(unique(tissueSpecificGenes$Gene))
   genesNotFound<-c()
   genesNotFound<-base::setdiff(inputGenes,totalGenes)
