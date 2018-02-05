@@ -17,11 +17,11 @@ utils::globalVariables(c("dataset",".", "%>%","Gene","Gene.name","Gene.stable.ID
 #' @examples
 #' data<-system.file("extdata", "combined-proteincodingGenedataCombine.txt", package = "TissueEnrich")
 #' #expressionData<-read.table(data,header=TRUE,row.names=1,sep='\t')
-#' #TSgenes<-tissueSpecificGenesRetrieval(expressionData)
+#' #TSgenes<-teGenesRetrieval(expressionData)
 #' #head(TSgenes)
 
 
-tissueSpecificGenesRetrieval<-function(expressionData,foldChangeThreshold=5,maxNumberOfTissues=7,expressedGeneThreshold=1)
+teGenesRetrieval<-function(expressionData,foldChangeThreshold=5,maxNumberOfTissues=7,expressedGeneThreshold=1)
 {
   ###Add checks for the conditions
   expressionData<-ensurer::ensure_that(expressionData, !is.null(.) && is.data.frame(.) && (nrow(.) > 0) && (ncol(.) > 1),err_desc = "expressionData should be a non-empty dataframe object with atleast 1 gene and 2 tissues. Rows are treated as genes and columns as tissues.")
@@ -159,7 +159,7 @@ tissueSpecificGenesRetrieval<-function(expressionData,foldChangeThreshold=5,maxN
 #'
 #' @author Ashish Jain, Geetu Tuteja
 #' @param inputGenes A vector containing the input genes.
-#' @param rnaSeqDataset An integer describing the dataset to be used for enrichment, 1 for "Human Protein Atlas", 2 for "GTEx combine", 3 for "GTEx sub-tissue", 4 for "Mouse ENCODE". Default 1.
+#' @param rnaSeqDataset An integer describing the dataset to be used for enrichment, 1 for "Human Protein Atlas", 2 for "GTEx Tissues", 3 for "Mouse ENCODE". Default 1.
 #' @param organism An integer describing the organism, 1 for "Homo Sapiens", 2 for "Mus Musculus". Default 1.
 #' @param tissueSpecificGeneType An integer describing type of tissue specific genes to be used, 1 for "All", 2 for "Tissue-Enriched",3 for "Tissue-Enhanced", and 4 for "Group-Enriched". Default 1.
 #' @param multiHypoCorrection Flag to carry out multiple hypothesis correction. Default TRUE.
@@ -172,7 +172,7 @@ tissueSpecificGenesRetrieval<-function(expressionData,foldChangeThreshold=5,maxN
 #' library(ggplot2)
 #' genes<-system.file("extdata", "inputGenes.txt", package = "TissueEnrich")
 #' inputGenes<-scan(genes,character())
-#' output<-tissueSpecificGeneEnrichment(inputGenes,geneFormat=2)
+#' output<-teGeneEnrichment(inputGenes,geneFormat=2)
 #' #Plotting the P-Values
 #' ggplot(output[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tissue.Specific.Genes,fill = Tissue))+
 #' geom_bar(stat = 'identity')+
@@ -183,14 +183,14 @@ tissueSpecificGenesRetrieval<-function(expressionData,foldChangeThreshold=5,maxN
 #' theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),panel.grid.major= element_blank(),panel.grid.minor = element_blank())
 
 
-tissueSpecificGeneEnrichment<-function(inputGenes = NULL,
+teGeneEnrichment<-function(inputGenes = NULL,
                                        rnaSeqDataset=1,#c("Human Protein Atlas","GTEx combine","GTEx sub-tissue","Mouse ENCODE"),
                                        organism=1,tissueSpecificGeneType=1,multiHypoCorrection=TRUE,
                                        geneFormat=1,isHomolog=FALSE)
 {
   ###Add checks for the conditions
   inputGenes<-ensurer::ensure_that(inputGenes, !is.null(.) && is.vector(.),err_desc = "Please enter correct inputGenes. It should be a character vector")
-  rnaSeqDataset<-ensurer::ensure_that(rnaSeqDataset, !is.null(.) && is.numeric(.) && . <=4 || . >=1,err_desc = "Please enter correct rnaSeqDataset. It should be 1 for Human Protein Atlas, 2 for GTEx combine, 3 for GTEx sub-tissue, 4 for Mouse ENCODE.")
+  rnaSeqDataset<-ensurer::ensure_that(rnaSeqDataset, !is.null(.) && is.numeric(.) && . <=3 || . >=1,err_desc = "Please enter correct rnaSeqDataset. It should be 1 for Human Protein Atlas, 2 for GTEx combine, 3 for GTEx sub-tissue, 4 for Mouse ENCODE.")
   organism<-ensurer::ensure_that(organism, !is.null(.) && is.numeric(.) && . <=2 || . >=1,err_desc = "Please enter correct organism. It should be either 1 for Homo Sapiens, 2 for Mus Musculus.")
   geneFormat<-ensurer::ensure_that(geneFormat,!is.null(.) && is.numeric(.) && . <=2 || . >=1,err_desc = "Please enter correct geneFormat. It should be either 1 for EnsemblId, 2 for Gene Symbol.")
   tissueSpecificGeneType<-ensurer::ensure_that(tissueSpecificGeneType,!is.null(.) && is.numeric(.)  && . <=4 || . >=1,err_desc = "Please enter correct tissueSpecificGeneType. It should be 1 for All, 2 for Tissue-Enriched,3 for Tissue-Enhanced, and 4 for Group-Enriched")
@@ -211,11 +211,6 @@ tissueSpecificGeneEnrichment<-function(inputGenes = NULL,
     tissueDetails<-dataset$`GTEx-Combine`$tissueDetails
     tissueSpecificGenes<-dataset$`GTEx-Combine`$tissueSpecificGenes
   }else if(rnaSeqDataset == 3)
-  {
-    expressionDataLocal<-dataset$`GTEx-Subtissues`$expressionData
-    tissueDetails<-dataset$`GTEx-Subtissues`$tissueDetails
-    tissueSpecificGenes<-dataset$`GTEx-Subtissues`$tissueSpecificGenes
-  }else if(rnaSeqDataset == 4)
   {
     expressionDataLocal<-dataset$`ENCODE Dataset`$expressionData
     tissueDetails<-dataset$`ENCODE Dataset`$tissueDetails
@@ -378,10 +373,10 @@ tissueSpecificGeneEnrichment<-function(inputGenes = NULL,
     if(geneFormat == 2)
     {
       intGenes<- geneMappingForCurrentDataset %>% dplyr::filter(Gene %in% intersect(tissueGenes$Gene,inputEnsemblGenes))
-      overlapTissueGenesList[[tissue]]<-as.character(intGenes$Gene.name)
+      overlapTissueGenesList[[as.character(tissueDetails[tissueDetails$RName == tissue,"TissueName"])]]<-as.character(intGenes$Gene.name)
     }else
     {
-      overlapTissueGenesList[[tissue]]<-intersect(tissueGenes$Gene,inputEnsemblGenes)
+      overlapTissueGenesList[[as.character(tissueDetails[tissueDetails$RName == tissue,"TissueName"])]]<-intersect(tissueGenes$Gene,inputEnsemblGenes)
     }
     GenesInTissue<-nrow(tissueGenes)
     pValue<-stats::phyper(overlapGenes-1,GenesInTissue,nrow(geneMappingForCurrentDataset)-GenesInTissue,length(inputEnsemblGenes),lower.tail = FALSE)
@@ -396,8 +391,9 @@ tissueSpecificGeneEnrichment<-function(inputGenes = NULL,
   }
   pValueList<-(-log10(pValueList))
 
-  output<-data.frame(Tissue=tissueNames,Log10PValue=pValueList,Tissue.Specific.Genes=overlapGenesList)
+  output<-data.frame(Tissue=tissueDetails$TissueName,Log10PValue=pValueList,Tissue.Specific.Genes=overlapGenesList)
   output<-output[with(output, order(-Log10PValue)), ]
+  #colnames(output)<-c("Tissue","-Log10PValue","Tissue-Specific-Genes")
   return(list(output,overlapTissueGenesList,genesNotFound))
 }
 
@@ -419,7 +415,7 @@ tissueSpecificGeneEnrichment<-function(inputGenes = NULL,
 #' head(TSgenes)
 #' genes<-system.file("extdata", "inputGenesEnsembl.txt", package = "TissueEnrich")
 #' inputGenes<-scan(genes,character())
-#' output<-tissueSpecificGeneEnrichmentCustom(inputGenes,TSgenes)
+#' output<-teGeneEnrichmentCustom(inputGenes,TSgenes)
 #' #Plotting the P-Values
 #' ggplot(output[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tissue.Specific.Genes,fill = Tissue))+
 #' geom_bar(stat = 'identity')+
@@ -429,7 +425,7 @@ tissueSpecificGeneEnrichment<-function(inputGenes = NULL,
 #' theme(plot.title = element_text(hjust = 0.5,size = 20),axis.title = element_text(size=15))+
 #' theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),panel.grid.major= element_blank(),panel.grid.minor = element_blank())
 
-tissueSpecificGeneEnrichmentCustom<-function(inputGenes=NULL,tissueSpecificGenes=NULL,
+teGeneEnrichmentCustom<-function(inputGenes=NULL,tissueSpecificGenes=NULL,
                                              tissueSpecificGeneType= 1,multiHypoCorrection = TRUE)
 {
   ###Add checks for the conditions
