@@ -16,7 +16,6 @@ Depends:
     R (>= 3.2),
     dplyr (>= 0.7.3),
     ensurer (>= 1.1),
-    utils (>= 3.4.1),
     ggplot2 (>= 2.2.1)
 Suggests: knitr, rmarkdown, RUnit 
 Encoding: UTF-8
