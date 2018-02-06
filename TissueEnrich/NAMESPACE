@@ -1,7 +1,6 @@
 import(ggplot2)
 import(dplyr)
 import(ensurer)
-import(utils)
 export(teGeneEnrichment)
 export(teGeneEnrichmentCustom)
 export(teGenesRetrieval)
