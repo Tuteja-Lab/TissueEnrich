@@ -55,7 +55,7 @@ head(TSgenes)
 The `teGeneEnrichment` function is used to calculate tissue specific gene enrichment using the processed data from widely used RNA-Seq studies in human and mouse. It has following RNA-Seq datasets:
 
 * **Human Protein Atlas [1]:** RNA-Seq data across 35 human tissues.
-* **GTEx DataSET [2]:** RNA-Seq data across 29 human tissues.
+* **GTEx Dataset [2]:** RNA-Seq data across 29 human tissues.
 * **Mouse ENCODE Dataset [3]:** RNA-Seq data across 17 mouse tissues.
 
 The above datasets are also processed and calculation of tissue-specific has been done based on the thresholds specified in Human Protein Atlas. The tissue specific gene enrichement is carried out using hypergeometric distribution.
