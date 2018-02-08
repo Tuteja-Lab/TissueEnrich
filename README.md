@@ -1,8 +1,8 @@
-# TissueEnrich: A R package to carry out tissue-specific gene enrichment.
+# TissueEnrich: R package to carry out tissue-specific gene enrichment.
 
 **Requirement**
 
-You need R version above 3.2 to run this application. In addition, this package requires the following packages.
+You need R version above 3.2 to run this application. Other dependencies are:
 
 * `dplyr (>= 0.7.3)`
 * `ensurer (>= 1.1)`
