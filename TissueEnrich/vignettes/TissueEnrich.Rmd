@@ -24,7 +24,7 @@ knitr::opts_chunk$set(
 
 # `TissueEnrich`
 
-`TissueEnrich` package is used to calculate tissue-specific gene enrichment using RNA-Seq data from Human protein atlas, GTEx, and mouse ENCODE data. The tissue specific genes are calculated based on the the algorithm from human protein atlas project [1]. Hypergeometric test is used to calculate the tissue specific gene enrichment in the input genes.
+`TissueEnrich` package is used to calculate tissue-specific gene enrichment using RNA-Seq data from Human protein atlas, GTEx, and mouse ENCODE data. The tissue specific genes are calculated based on the algorithm from human protein atlas project [1]. Hypergeometric test is used to calculate the tissue specific gene enrichment in the input genes.
 
 # Using `teGenesRetrieval`
 
@@ -104,7 +104,7 @@ This function also have a functionality in which a mouse dataset can be used to 
 ```{r eval=FALSE}
 genes<-system.file("extdata", "inputGenes.txt", package = "TissueEnrich")
 inputGenes<-scan(genes,character())
-output<-teGeneEnrichment(inputGenes = inputGenes,rnaSeqDataset = 4, organism = 1, geneFormat=2,isHomolog = TRUE)
+output<-teGeneEnrichment(inputGenes = inputGenes,rnaSeqDataset = 3, organism = 1, geneFormat=2,isHomolog = TRUE)
 ggplot(output[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tissue.Specific.Genes,fill = Tissue))+
       geom_bar(stat = 'identity')+
       labs(x='', y = '-LOG10(P-Value)')+

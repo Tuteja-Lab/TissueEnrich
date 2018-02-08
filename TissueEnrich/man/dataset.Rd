@@ -4,11 +4,10 @@
 \name{dataset}
 \alias{dataset}
 \title{Processed data for GTEx, Human Protein Atlas, and Mouse ENCODE}
-\format{A list object containing 7 objects:
+\format{A list object containing 6 objects:
 \describe{
   \item{Protein-Atlas}{Human Protein atlas processed data with normalized expression values (in 35 tissues), tissue details, and tissue specific genes.}
   \item{GTEx-Combine}{GTEx-combine processed data with normalized expression values (in 29 tissues), tissue details, and tissue specific genes.}
-  \item{GTEx-Subtissues}{GTEx-subtissues processed data with normalized expression values (in 50 tissues), tissue details, and tissue specific genes.}
   \item{ENCODE Dataset}{Human Protein atlas processed data with normalized expression values (in 17 tissues), tissue details, and tissue specific genes.}
   \item{mouseGeneMapping}{Ensembl Id and Gene symbol mapping dataframe for mouse protein coding genes.}
   \item{mouseHumanOrthologs}{One to one human and mouse orthologs mapping.}
@@ -16,6 +15,9 @@
 }}
 \usage{
 dataset
+}
+\value{
+A list object (have 6 child objects) containing processed values from different data sources used in this tool.
 }
 \description{
 A list object containing the processed data from GTEx, Human Protein Atlas, and Mouse ENCODE
