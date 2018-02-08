@@ -3,6 +3,7 @@
 **Requirement**
 
 You need R version above 3.2 to run this application. In addition, this package requires the following packages.
+
 * `dplyr (>= 0.7.3)`
 * `ensurer (>= 1.1)`
 * `ggplot2 (>= 2.2.1)`
@@ -12,7 +13,7 @@ You need R version above 3.2 to run this application. In addition, this package 
 * Download or fork the bitbucket repository
 * Open R terminal or RStudio terminal
 * Install Dependencies
-* install.packages(c("dplyr","ensurer","ggplot2"))
+* `install.packages(c("dplyr","ensurer","ggplot2"))`
 * Set the current path to the Bitbucket repository `setwd(<Path of bitbucket repository>)`
 * Run command `install.packages("TissueEnrich_1.0.0.tar.gz", repos = NULL, type="source")`
 
