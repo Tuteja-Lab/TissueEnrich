@@ -24,58 +24,62 @@ knitr::opts_chunk$set(
 
 # `TissueEnrich`
 
-`TissueEnrich` package is used to calculate tissue-specific gene enrichment using RNA-Seq data from Human protein atlas, GTEx, and mouse ENCODE data. The tissue specific genes are calculated based on the algorithm from human protein atlas project [1]. Hypergeometric test is used to calculate the tissue specific gene enrichment in the input genes.
+`TissueEnrich` package is used to calculate tissue-specific gene enrichment using RNA-Seq data from Human protein atlas, GTEx, and mouse ENCODE data. The tissue-specific genes are calculated based on the algorithm from human protein atlas project [1]. Hypergeometric test is used to calculate the tissue-specific gene enrichment in the input genes. `TissueEnrich` consists of three functions to calculate the tissue-specific genes and tissue-specific gene enrichment.
 
-# Using `teGenesRetrieval`
+* `teGeneRetrieval`: Calculation of tissue-specific genes by using the algorithm from the Human Protein Atlas project.
+* `teEnrichment`: Calculation of tissue-specific gene enrichment using hypergeometric test.
+* `teEnrichmentCustom`: Calculation of tissue-specific gene enrichment using custom datasets.
 
-This `tissueSpecificGenesRetrieval` function is used to calculate tissue specific genes by using the algorithm from human protein atlas project [1]. The genes are divided into six groups based on their gene expression across the tissues. These groups are:
+# Using `teGeneRetrieval`
 
-* **Not Detected:** Genes having expression less than 1 (TPM/FPKM) across all the tissues.
-* **Tissue Enriched:** Tissue Enriched: At least five-fold higher mRNA levels in a particular tissue as compared to all other tissues.
-* **Group Enriched:** At least five-fold higher mRNA levels in a group of 2-7 tissues and doesn't come in any of the above 2 groups.
-* **Tissue Enhanced:** At least five-fold higher mRNA levels in a particular tissue as compared to average levels in all tissues and doesn't come in any of the above 3 groups.
-* **Expressed in all:** Have expression greater than or equal to 1 (TPM/FPKM) across all the tissues and doesn't come in any of the above 4 groups.
-* **Mixed:** Not come under any of the above 5 groups.
+This `teGeneRetrieval` function calculates the tissue-specific genes based on the algorithm from the Human Protein Atlas project [1]. The genes are divided into six groups based on their gene expression across the tissues. These groups are:
 
-Out of these, **Tissue Enriched**, **Group Enriched**, and **Tissue Enhanced** groups are classified as tissue enriched.
+* **Not Detected:** Genes whose mRNA expression is less than 1 (TPM/FPKM) across all the tissues.
+* **Tissue Enriched:** Genes whose mRNA expression is at least five-fold higher mRNA levels in a particular tissue as compared to all other tissues.
+* **Group Enriched:** Genes whose mRNA expression is at least five-fold higher mRNA levels in a group of 2-7 tissues and doesn't come in any of the above 2 groups.
+* **Tissue Enhanced:** Genes whose mRNA expression is at least five-fold higher mRNA levels in a particular tissue as compared to average levels in all tissues and doesn't come in any of the above 3 groups.
+* **Expressed in all:** Genes whose mRNA expression is greater than or equal to 1 (TPM/FPKM) across all the tissues and doesn't come in any of the above 4 groups.
+* **Mixed:** Genes that don’t occur in any of the above 5 groups.
 
-The function `teGenesRetrieval` takes gene expression matrix as the input (rows as genes and columns as tissue) and calculates the tissue-specific genes. Although, the above mentioned criterias are specified in Human Protein Atlas [1], users can also change the different thresholds to calculate tissue-specific genes in their dataset. The output consists of a data frame with columns: Gene Name, Tissue Name, and Tissue-Specific Group.
+Out of these, **Tissue Enriched**, **Group Enriched**, and **Tissue Enhanced** groups are classified as tissue-enriched.
+
+The function `teGeneRetrieval` takes gene expression matrix as the input (rows as genes and columns as tissue) and calculates the tissue-specific genes. Although, the above mentioned criterias are specified in Human Protein Atlas [1], users can also change the different thresholds to calculate tissue-specific genes in their dataset. The output consists of a data frame with the following columns: Gene Name, Tissue Name, and Tissue-Specific Group.
 
 
-```{r eval=FALSE}
+```{r eval=TRUE}
 library(TissueEnrich)
-data<-system.file("extdata", "combined-proteincodingGenedataCombine.txt", package = "TissueEnrich")
+data<-system.file("extdata", "test.expressiondata.txt", package = "TissueEnrich")
 expressionData<-read.table(data,header=TRUE,row.names=1,sep='\t')
-TSgenes<-teGenesRetrieval(expressionData)
+TSgenes<-teGeneRetrieval(expressionData)
 head(TSgenes)
 ```
 
-# Using `teGeneEnrichment`
+# Using `teEnrichment`
 
-The `teGeneEnrichment` function is used to calculate tissue specific gene enrichment using the processed data from widely used RNA-Seq studies in human and mouse. It has following RNA-Seq datasets:
+The `teEnrichment` function is used to calculate tissue-specific gene enrichment using the processed data from widely used RNA-Seq studies in human and mouse. It has following RNA-Seq datasets:
 
 * **Human Protein Atlas [1]:** RNA-Seq data across 35 human tissues.
 * **GTEx Dataset [2]:** RNA-Seq data across 29 human tissues.
 * **Mouse ENCODE Dataset [3]:** RNA-Seq data across 17 mouse tissues.
 
-The above datasets are also processed and calculation of tissue-specific has been done based on the thresholds specified in Human Protein Atlas. The tissue specific gene enrichement is carried out using hypergeometric distribution.
+Tissue-specificity in a user’s gene set will be determined based on the enrichment of tissue-specific genes in the above datasets. The tissue-specific genes in the datasets are calculated based on the thresholds specified in Human Protein Atlas. The tissue-specific gene enrichement is carried out using hypergeometric distribution.
 
 $$ P(X = k) = \frac{{{K}\choose{k}} {{N-K}\choose{n-k}}}{{{N}\choose{n}}} $$
-Here, N is the total number of genes, K is the total number of tissue specific genes for a tissue, n is the number of genes in the input gene set, k is the number of tissue specific genes in the input gene set. The p-values were also corrected for the multiple hypotheses, using Bonferroni Hochberg correction.
+Here, N is the total number of genes, K is the total number of tissue-specific genes for a tissue, n is the number of genes in the input gene set, k is the number of tissue-specific genes in the input gene set. The p-values were also corrected for the multiple hypotheses, using Bonferroni Hochberg correction.
 
-There is also a flag to carry out multiple hypothesis correction using Bonferroni Hochberg method. In the example below we used a gene list contating top 100 polar genes found in a human single cell dataset.
+There is also a flag to carry out multiple hypothesis correction using Bonferroni Hochberg method. In the example below, we used a gene list containing the top 100 polar genes found in a human single cell dataset [4].
 
-```{r eval=TRUE,warning=FALSE}
+```{r eval=TRUE}
 library(TissueEnrich)
 library(dplyr)
 genes<-system.file("extdata", "inputGenes.txt", package = "TissueEnrich")
 inputGenes<-scan(genes,character())
-output<-teGeneEnrichment(inputGenes = inputGenes,geneFormat=2)
+output<-teEnrichment(inputGenes = inputGenes,geneFormat=2)
 ```
 
-The output from this function is a list object consist of three objects. The first object is a dataframe containing the -Log10(P-Value) for each tissue in the dataset. This dataframe can be used to plot a histogram as shown below.
+The output from this function is a list object consist of three objects. The first object is a dataframe object containing the -Log10(P-Value) for each tissue in the dataset. This dataframe object can be used to plot a histogram as shown below.
 
-```{r eval=TRUE,warning=FALSE}
+```{r eval=TRUE}
 library(ggplot2)
 ggplot(output[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tissue.Specific.Genes,fill = Tissue))+
       geom_bar(stat = 'identity')+
@@ -86,25 +90,25 @@ ggplot(output[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tiss
       theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),panel.grid.major= element_blank(),panel.grid.minor = element_blank())
 ```
 
-The second object is a list containing the tissue-specific genes found in each tissue. For example, below we are showing the tissue-specific genes in placenta tissue.
+The second object is a list containing the tissue-specific genes found in each tissue. For example, the code below retrieves the tissue-specific genes in placenta.
 
-```{r eval=TRUE,warning=FALSE}
+```{r eval=TRUE}
 print("Placenta specific genes found in input genes are:")
 print(output[[2]][["Placenta"]])
 ```
 
-The third object is a character vector consisting of a list of input genes which are not found in our dataset
-```{r eval=TRUE,warning=FALSE}
+The third object is a character vector consisting of a list of input genes that are not in our dataset.
+```{r eval=TRUE}
 print("Input genes not found in our dataset are:")
 print(output[[3]])
 ```
 
-This function also have a functionality in which a mouse dataset can be used to calculate tissue specific gene enrichment in the input human gene list or vice-a-versa. There is a `isHomolog` flag in the function which need to be set `TRUE` in case of using the functionality. We use one to one protein coding homologs to map the human genes to mouse genes and vice-a-versa using Ensembl V91 database. For example, the above used human input genes can be used with Mouse ENCODE dataset.
+This `teEnrichment` function also has the functionality of using a mouse dataset to calculate tissue-specific gene enrichment in a input human gene list or vice versa. The `isHomolog` flag need to be set `TRUE` to use this functionality. This argument uses one-to-one protein coding homologs to map human genes to mouse genes and vice versa using Ensembl V91 database. For example, the above used human input genes can be used with Mouse ENCODE dataset.
 
-```{r eval=FALSE}
+```{r eval=TRUE}
 genes<-system.file("extdata", "inputGenes.txt", package = "TissueEnrich")
 inputGenes<-scan(genes,character())
-output<-teGeneEnrichment(inputGenes = inputGenes,rnaSeqDataset = 3, organism = 1, geneFormat=2,isHomolog = TRUE)
+output<-teEnrichment(inputGenes = inputGenes,rnaSeqDataset = 3, organism = 1, geneFormat=2,isHomolog = TRUE)
 ggplot(output[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tissue.Specific.Genes,fill = Tissue))+
       geom_bar(stat = 'identity')+
       labs(x='', y = '-LOG10(P-Value)')+
@@ -115,17 +119,17 @@ ggplot(output[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tiss
 ```
 
 
-# Using `teGeneEnrichmentCustom`
+# Using `teEnrichmentCustom`
 
-The `teGeneEnrichmentCustom` function is used to calculate tissue specific gene enrichment using the processed data calculated from `teGenesRetrieval` function.
+The `teEnrichmentCustom` function is used to calculate tissue-specific gene enrichment using the processed data calculated from `teGeneRetrieval` function.
 
-```{r eval=FALSE,warning=FALSE}
-data<-system.file("extdata", "combined-proteincodingGenedataCombine.txt", package = "TissueEnrich")
+```{r eval=FALSE}
+data<-system.file("extdata", "test.expressiondata.txt", package = "TissueEnrich")
 expressionData<-read.table(data,header=TRUE,row.names=1,sep='\t')
-TSgenes<-teGenesRetrieval(expressionData)
+TSgenes<-teGeneRetrieval(expressionData)
 genes<-system.file("extdata", "inputGenesEnsembl.txt", package = "TissueEnrich")
 inputGenes<-scan(genes,character())
-output<-teGeneEnrichmentCustom(inputGenes,TSgenes)
+output<-teEnrichmentCustom(inputGenes,TSgenes)
 ggplot(output[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tissue.Specific.Genes,fill = Tissue))+
       geom_bar(stat = 'identity')+
       labs(x='', y = '-LOG10(P-Value)')+
@@ -139,3 +143,4 @@ ggplot(output[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tiss
 [1]: https://www.proteinatlas.org/humanproteome/tissue+specific
 [2]: https://www.gtexportal.org/home/documentationPage
 [3]: http://chromosome.sdsc.edu/mouse/download.html
+[4]: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4868821/

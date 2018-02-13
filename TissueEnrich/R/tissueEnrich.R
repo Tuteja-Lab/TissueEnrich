@@ -6,22 +6,23 @@ library(utils)
 ##To Supress Note
 utils::globalVariables(c("dataset",".", "%>%","Gene","Gene.name","Gene.stable.ID","Human.gene.name","Human.gene.stable.ID","Group","Tissue"))
 
-#' Calculation of tissue specific genes by using the algorithm from human protein atlas project.
+#' Calculation of tissue-specific genes by using the algorithm from the Human Protein Atlas project
+#' @description This function is used to calculate the tissue-specific genes from the input gene expression using the algorithm from the Human Protein Atlas project.
 #' @author Ashish Jain, Geetu Tuteja
-#' @param expressionData A dataframe object containing gene expression values (Rows are genes and Tissues are columns) .
-#' @param foldChangeThreshold A number. Threshold of fold change, default 5.
-#' @param maxNumberOfTissues A number. Maximum number of tissues in a group for group enriched genes, default 7.
-#' @param expressedGeneThreshold A number. Minimum gene expression cutoff for the gene to be called as expressed, default 1.
+#' @param expressionData A dataframe object containing gene expression values (Rows are genes and Tissues are columns).
+#' @param foldChangeThreshold A numeric Threshold of fold change, default 5.
+#' @param maxNumberOfTissues A numeric Maximum number of tissues in a group for group enriched genes, default 7.
+#' @param expressedGeneThreshold A numeric Minimum gene expression cutoff for the gene to be called as expressed, default 1.
 #' @export
-#' @return A data frame object with three columns, Gene, Tissues, and the enrichment group of the gene in the given tissue.
+#' @return A data frame object with three columns, Gene, Tissues, and Enrichment group of the gene in the given tissue.
 #' @examples
-#' data<-system.file("extdata", "combined-proteincodingGenedataCombine.txt", package = "TissueEnrich")
-#' #expressionData<-read.table(data,header=TRUE,row.names=1,sep='\t')
-#' #TSgenes<-teGenesRetrieval(expressionData)
-#' #head(TSgenes)
+#' data<-system.file("extdata", "test.expressiondata.txt", package = "TissueEnrich")
+#' expressionData<-read.table(data,header=TRUE,row.names=1,sep='\t')
+#' TSgenes<-teGeneRetrieval(expressionData)
+#' head(TSgenes)
 
 
-teGenesRetrieval<-function(expressionData,foldChangeThreshold=5,maxNumberOfTissues=7,expressedGeneThreshold=1)
+teGeneRetrieval<-function(expressionData,foldChangeThreshold=5,maxNumberOfTissues=7,expressedGeneThreshold=1)
 {
   ###Add checks for the conditions
   expressionData<-ensurer::ensure_that(expressionData, !is.null(.) && is.data.frame(.) && (nrow(.) > 0) && (ncol(.) > 1),err_desc = "expressionData should be a non-empty dataframe object with atleast 1 gene and 2 tissues. Rows are treated as genes and columns as tissues.")
@@ -155,24 +156,27 @@ teGenesRetrieval<-function(expressionData,foldChangeThreshold=5,maxNumberOfTissu
 # }
 
 
-#' Calculation of tissue specific gene enrichment using hypergeometric test
+#' Calculation of tissue-specific gene enrichment using hypergeometric test
 #'
+#' @description This function is used to calculate the tissue-specific gene enrichment using the various human and mouse dataset.
 #' @author Ashish Jain, Geetu Tuteja
 #' @param inputGenes A vector containing the input genes.
-#' @param rnaSeqDataset An integer describing the dataset to be used for enrichment, 1 for "Human Protein Atlas", 2 for "GTEx Tissues", 3 for "Mouse ENCODE". Default 1.
-#' @param organism An integer describing the organism, 1 for "Homo Sapiens", 2 for "Mus Musculus". Default 1.
-#' @param tissueSpecificGeneType An integer describing type of tissue specific genes to be used, 1 for "All", 2 for "Tissue-Enriched",3 for "Tissue-Enhanced", and 4 for "Group-Enriched". Default 1.
-#' @param multiHypoCorrection Flag to carry out multiple hypothesis correction. Default TRUE.
-#' @param geneFormat Type of gene symbol, 1 for "EnsemblId", 2 for "Gene Symbol". Default 1.
-#' @param isHomolog Flag for usage of orthologus genes, default FALSE.
+#' @param rnaSeqDataset An integer describing the dataset to be used for enrichment analysis. 1 for "Human Protein Atlas" (default), 2 for "GTEx Tissues", 3 for "Mouse ENCODE". Default 1.
+#' @param organism An integer describing the organism. 1 for "Homo Sapiens" (default), 2 for "Mus Musculus". Default 1.
+#' @param tissueSpecificGeneType An integer describing the type of tissue-specific genes to be used.
+#' 1 for "All" (default), 2 for "Tissue-Enriched", 3 for "Tissue-Enhanced", and 4 for "Group-Enriched". Default 1.
+#' @param multiHypoCorrection Flag to correct P-values for multiple hypothesis using BH method. Default TRUE.
+#' @param geneFormat Type of gene symbol to be used for input. 1 for "EnsemblId" (default), 2 for "Gene Symbol". Default 1.
+#' @param isHomolog Flag to use orthologus genes. Default FALSE.
 #' @export
-#' @return A list object with three objects, first is the enrichment matrix, second is the list containing the tissue-specific genes found in the input genes, third is the vector containing genes not found in our data.
+#' @return A list object with three objects, first is the enrichment matrix, second is the list containing the tissue-specific genes found in the input genes,
+#' third is the vector containing genes not found in our RNA-Seq datasets.
 #' @examples
 #' library(dplyr)
 #' library(ggplot2)
 #' genes<-system.file("extdata", "inputGenes.txt", package = "TissueEnrich")
 #' inputGenes<-scan(genes,character())
-#' output<-teGeneEnrichment(inputGenes,geneFormat=2)
+#' output<-teEnrichment(inputGenes,geneFormat=2)
 #' #Plotting the P-Values
 #' ggplot(output[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tissue.Specific.Genes,fill = Tissue))+
 #' geom_bar(stat = 'identity')+
@@ -180,10 +184,11 @@ teGenesRetrieval<-function(expressionData,foldChangeThreshold=5,maxNumberOfTissu
 #' theme_bw()+
 #' theme(legend.position="none")+
 #' theme(plot.title = element_text(hjust = 0.5,size = 20),axis.title = element_text(size=15))+
-#' theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),panel.grid.major= element_blank(),panel.grid.minor = element_blank())
+#' theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),
+#' panel.grid.major= element_blank(),panel.grid.minor = element_blank())
 
 
-teGeneEnrichment<-function(inputGenes = NULL,
+teEnrichment<-function(inputGenes = NULL,
                                        rnaSeqDataset=1,#c("Human Protein Atlas","GTEx combine","GTEx sub-tissue","Mouse ENCODE"),
                                        organism=1,tissueSpecificGeneType=1,multiHypoCorrection=TRUE,
                                        geneFormat=1,isHomolog=FALSE)
@@ -255,7 +260,7 @@ teGeneEnrichment<-function(inputGenes = NULL,
     finalTissueSpecificGenes<-tissueSpecificGenes %>% dplyr::filter(Group == "Group-Enriched")
   }else
   {
-    stop("Tissue specific gene type is not correct.",call. = FALSE)
+    stop("Tissue-specific gene type is not correct.",call. = FALSE)
     #print("Something is wrong!")
   }
 
@@ -398,24 +403,26 @@ teGeneEnrichment<-function(inputGenes = NULL,
 }
 
 
-#' Calculation of tissue specific gene enrichment using hypergeometric test for custom datasets
+#' Calculation of tissue-specific gene enrichment using hypergeometric test for custom datasets
+#' @description This function is used to calculate the tissue-specific gene enrichment using the custom tissue-specific dataset.
 #' @author Ashish Jain, Geetu Tuteja
 #' @param inputGenes A vector containing the input genes.
-#' @param tissueSpecificGenes A dataframe object. Output from `tissueSpecificGenesRetrieval` function. Default NULL.
-#' @param tissueSpecificGeneType An integer describing type of tissue specific genes to be used, 1 for "All", 2 for "Tissue-Enriched",3 for "Tissue-Enhanced", and 4 for "Group-Enriched". Default 1.
-#' @param multiHypoCorrection Flag to carry out multiple hypothesis correction. Default TRUE.
+#' @param tissueSpecificGenes A dataframe object. Output from `teGeneRetrieval` function. Default NULL.
+#' @param tissueSpecificGeneType An integer describing the type of tissue-specific genes to be used. 1 for "All" (default), 2 for "Tissue-Enriched",3 for "Tissue-Enhanced", and 4 for "Group-Enriched". Default 1.
+#' @param multiHypoCorrection Flag to correct P-values for multiple hypothesis using BH method. Default TRUE.
 #' @export
-#' @return A list object with three objects, first is the enrichment matrix, second is the list containing the tissue-specific genes found in the input genes, third is the vector containing genes not found in our data.
+#' @return A list object with three objects, first is the enrichment matrix, second is the list containing the tissue-specific genes found in the input genes,
+#' third is the vector containing genes not found in the data.
 #' @examples
 #' library(dplyr)
 #' library(ggplot2)
-#' data<-system.file("extdata", "combined-proteincodingGenedataCombine.txt", package = "TissueEnrich")
+#' data<-system.file("extdata", "test.expressiondata.txt", package = "TissueEnrich")
 #' expressionData<-read.table(data,header=TRUE,row.names=1,sep='\t')
-#' TSgenes<-tissueSpecificGenesRetrieval(expressionData)
+#' TSgenes<-teGeneRetrieval(expressionData)
 #' head(TSgenes)
 #' genes<-system.file("extdata", "inputGenesEnsembl.txt", package = "TissueEnrich")
 #' inputGenes<-scan(genes,character())
-#' output<-teGeneEnrichmentCustom(inputGenes,TSgenes)
+#' output<-teEnrichmentCustom(inputGenes,TSgenes)
 #' #Plotting the P-Values
 #' ggplot(output[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tissue.Specific.Genes,fill = Tissue))+
 #' geom_bar(stat = 'identity')+
@@ -423,9 +430,10 @@ teGeneEnrichment<-function(inputGenes = NULL,
 #' theme_bw()+
 #' theme(legend.position="none")+
 #' theme(plot.title = element_text(hjust = 0.5,size = 20),axis.title = element_text(size=15))+
-#' theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),panel.grid.major= element_blank(),panel.grid.minor = element_blank())
+#' theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),
+#' panel.grid.major= element_blank(),panel.grid.minor = element_blank())
 
-teGeneEnrichmentCustom<-function(inputGenes=NULL,tissueSpecificGenes=NULL,
+teEnrichmentCustom<-function(inputGenes=NULL,tissueSpecificGenes=NULL,
                                              tissueSpecificGeneType= 1,multiHypoCorrection = TRUE)
 {
   ###Add checks for the conditions
@@ -449,7 +457,7 @@ teGeneEnrichmentCustom<-function(inputGenes=NULL,tissueSpecificGenes=NULL,
     finalTissueSpecificGenes<-tissueSpecificGenes %>% dplyr::filter(Group == "Group-Enriched")
   }else
   {
-    stop("Tissue specific gene type is not correct.",call. = FALSE)
+    stop("Tissue-specific gene type is not correct.",call. = FALSE)
     #print("Something is wrong!")
   }
 
