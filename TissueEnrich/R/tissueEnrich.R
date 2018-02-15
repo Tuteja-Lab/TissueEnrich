@@ -4,7 +4,7 @@ library(ensurer)
 library(utils)
 
 ##To Supress Note
-utils::globalVariables(c("dataset",".", "%>%","Gene","Gene.name","Gene.stable.ID","Human.gene.name","Human.gene.stable.ID","Group","Tissue"))
+utils::globalVariables(c(".", "%>%","Gene","Gene.name","Gene.stable.ID","Human.gene.name","Human.gene.stable.ID","Group","Tissue"))
 
 #' Calculation of tissue-specific genes by using the algorithm from the Human Protein Atlas project
 #' @description This function is used to calculate the tissue-specific genes from the input gene expression using the algorithm from the Human Protein Atlas project.
@@ -201,25 +201,26 @@ teEnrichment<-function(inputGenes = NULL,
   tissueSpecificGeneType<-ensurer::ensure_that(tissueSpecificGeneType,!is.null(.) && is.numeric(.)  && . <=4 || . >=1,err_desc = "Please enter correct tissueSpecificGeneType. It should be 1 for All, 2 for Tissue-Enriched,3 for Tissue-Enhanced, and 4 for Group-Enriched")
   isHomolog<-ensurer::ensure_that(isHomolog,!is.null(.) && is.logical(.) ,err_desc = "Please enter correct isHomolog. It should be either TRUE or FALSE")
   multiHypoCorrection<-ensurer::ensure_that(multiHypoCorrection,!is.null(.) && is.logical(.) ,err_desc = "Please enter correct multiHypoCorrection. It should be either TRUE or FALSE")
-
   ##Enviroment to load datasets
   #env<-loading("data/combine-expression.rda")
   ##Load gene mapping and orthologs Data
+  e <- new.env()
+  load(file = system.file("extdata", "combine-expression.rda", package = "TissueEnrich"),envir = e)
   if(rnaSeqDataset == 1)
   {
-    expressionDataLocal<-dataset$`Protein-Atlas`$expressionData
-    tissueDetails<-dataset$`Protein-Atlas`$tissueDetails
-    tissueSpecificGenes<-dataset$`Protein-Atlas`$tissueSpecificGenes
+    expressionDataLocal<-e$dataset$`Protein-Atlas`$expressionData
+    tissueDetails<-e$dataset$`Protein-Atlas`$tissueDetails
+    tissueSpecificGenes<-e$dataset$`Protein-Atlas`$tissueSpecificGenes
   }else if(rnaSeqDataset == 2)
   {
-    expressionDataLocal<-dataset$`GTEx-Combine`$expressionData
-    tissueDetails<-dataset$`GTEx-Combine`$tissueDetails
-    tissueSpecificGenes<-dataset$`GTEx-Combine`$tissueSpecificGenes
+    expressionDataLocal<-e$dataset$`GTEx-Combine`$expressionData
+    tissueDetails<-e$dataset$`GTEx-Combine`$tissueDetails
+    tissueSpecificGenes<-e$dataset$`GTEx-Combine`$tissueSpecificGenes
   }else if(rnaSeqDataset == 3)
   {
-    expressionDataLocal<-dataset$`ENCODE Dataset`$expressionData
-    tissueDetails<-dataset$`ENCODE Dataset`$tissueDetails
-    tissueSpecificGenes<-dataset$`ENCODE Dataset`$tissueSpecificGenes
+    expressionDataLocal<-e$dataset$`ENCODE Dataset`$expressionData
+    tissueDetails<-e$dataset$`ENCODE Dataset`$tissueDetails
+    tissueSpecificGenes<-e$dataset$`ENCODE Dataset`$tissueSpecificGenes
   }else
   {
     stop("Please enter correct dataset id.",call. = FALSE)
@@ -230,10 +231,10 @@ teEnrichment<-function(inputGenes = NULL,
   ##Check for organism and homolog to update geneMapping Variable
   if(organism == 1)#"Homo Sapiens")
   {
-    geneMapping<-dataset$humanGeneMapping
+    geneMapping<-e$dataset$humanGeneMapping
   }else if(organism == 2)#"Mus Musculus")
   {
-    geneMapping<-dataset$mouseGeneMapping
+    geneMapping<-e$dataset$mouseGeneMapping
   }else
   {
     stop("Please enter correct organism.",call. = FALSE)
@@ -242,7 +243,7 @@ teEnrichment<-function(inputGenes = NULL,
 
   if(isHomolog)
   {
-    geneMapping<-dataset$mouseHumanOrthologs
+    geneMapping<-e$dataset$mouseHumanOrthologs
   }
 
   ###Update tissueSpecificGene variable based on the group
