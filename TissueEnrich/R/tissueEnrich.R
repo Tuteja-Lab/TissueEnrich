@@ -396,7 +396,7 @@ teEnrichment<-function(inputGenes = NULL,
     }else
     {
       teExpressionData<- expressionDataLocal[intersect(tissueGenes$Gene,inputEnsemblGenes),]
-      teInputGeneGroups<-tissueGenes[inputEnsemblGenes,c("Gene","Group")]
+      teInputGeneGroups<-tissueGenes %>% dplyr::filter(Gene %in% inputEnsemblGenes) %>% select(Gene,Group)
     }
     colnames(teInputGeneGroups) <-c("Gene","Group")
     colnames(teExpressionData)<-tissueDetails$TissueName
@@ -414,7 +414,6 @@ teEnrichment<-function(inputGenes = NULL,
     pValueList<-stats::p.adjust(pValueList,method = "BH")
   }
   pValueList<-(-log10(pValueList))
-
   output<-data.frame(Tissue=tissueDetails$TissueName,Log10PValue=pValueList,Tissue.Specific.Genes=overlapGenesList)
   output<-output[with(output, order(-Log10PValue)), ]
   #colnames(output)<-c("Tissue","-Log10PValue","Tissue-Specific-Genes")
@@ -498,7 +497,7 @@ teEnrichmentCustom<-function(inputGenes=NULL,tissueSpecificGenes=NULL,
     tissueGenes<-finalTissueSpecificGenes %>% dplyr::filter(Tissue==tissue)
     overlapGenes<-length(intersect(tissueGenes$Gene,inputEnsemblGenes))
     #teExpressionData<- expressionDataLocal[intersect(tissueGenes$Gene,inputEnsemblGenes),]
-    teInputGeneGroups<-tissueGenes[tissueGenes$Gene == inputEnsemblGenes,c("Gene","Group")]
+    teInputGeneGroups<-tissueGenes %>% dplyr::filter(Gene %in% inputEnsemblGenes) %>% select(Gene,Group)
     overlapTissueGenesList[[tissue]]<-teInputGeneGroups
     GenesInTissue<-nrow(tissueGenes)
     pValue<-stats::phyper(overlapGenes-1,GenesInTissue,length(totalGenes)-GenesInTissue,length(inputEnsemblGenes),lower.tail = FALSE)
