@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-`TissueEnrich` package is used to calculate tissue-specific gene enrichment in the input gene groups. The user can input the top expressed gene set from single-cell RNA-Seq data or co-expressed gene modules to identify the tissue-specificity in those datasets. It has the tissue-specific genes processed from large-scale RNA-Seq data of various tissues studies from Human protein atlas, GTEx, and mouse ENCODE data. The tissue-specific genes are calculated based on the algorithm from human protein atlas project [1]. The hypergeometric test is being used to calculate the tissue-specific gene enrichment in the input genes. `TissueEnrich` consists of three functions to calculate the tissue-specific genes and tissue-specific gene enrichment.
+`TissueEnrich` package is used to calculate tissue-specific gene enrichment in the input gene groups. The user can input the top expressed gene set from single-cell RNA-Seq data or co-expressed gene modules to identify the tissue-specificity in those datasets. It consists of the tissue-specific genes processed from large-scale RNA-Seq data of various studies including Human protein atlas, GTEx, and mouse ENCODE data. The tissue-specific genes are calculated based on the algorithm from human protein atlas project [1]. The hypergeometric test is being used to calculate the tissue-specific gene enrichment in the input genes. `TissueEnrich` consists of three functions to calculate the tissue-specific genes and tissue-specific gene enrichment.
 
 * `teEnrichment`: Calculation of tissue-specific gene enrichment in mouse and humans using hypergeometric test.
 * `teGeneRetrieval`: Calculation of tissue-specific genes by using the algorithm from the Human Protein Atlas project.
@@ -28,13 +28,19 @@ knitr::opts_chunk$set(
 
 # Using `teEnrichment`
 
-The `teEnrichment` function is used to calculate tissue-specific gene enrichment using the processed data from widely used RNA-Seq studies in human and mouse. It has following RNA-Seq datasets:
+The `teEnrichment` function carry out the tissue-specific gene enrichment in the input gene set. It consists of tissue-specific gene information identified from RNA-Seq studies in human and mouse. It has following RNA-Seq datasets:
 
 * **Human Protein Atlas [1]:** RNA-Seq data across 35 human tissues.
 * **GTEx Dataset [2]:** RNA-Seq data across 29 human tissues.
 * **Mouse ENCODE Dataset [3]:** RNA-Seq data across 17 mouse tissues.
 
-Tissue-specificity in a user’s gene set will be determined based on the enrichment of tissue-specific genes in the above datasets. The tissue-specific genes in the datasets are calculated based on the thresholds specified in Human Protein Atlas. The tissue-specific gene enrichement is carried out using hypergeometric distribution.
+Tissue-specificity in a user’s gene set will be determined based on the enrichment of tissue-specific genes in the above datasets. The tissue-specific genes in the datasets are calculated based on the thresholds specified in Human Protein Atlas [1]. The tissue-specific groups are defined as:
+
+* **Tissue Enriched:** Genes whose mRNA expression is at least five-fold higher mRNA levels in a particular tissue as compared to all other tissues.
+* **Group Enriched:** Genes whose mRNA expression is at least five-fold higher mRNA levels in a group of 2-7 tissues and doesn't come in any of the above 2 groups.
+* **Tissue Enhanced:** Genes whose mRNA expression is at least five-fold higher mRNA levels in a particular tissue as compared to average levels in all tissues and doesn't come in any of the above 3 groups.
+
+The user can specify (`tissueSpecificGeneType`) which tissue-specific gene group to used for carrying out enrichment. The user can also enter input gene set in two different formats (Ensembl Id or Gene Symbol). The tissue-specific gene enrichement is calculated using hypergeometric distribution.
 
 $$ P(X \gt k) = \sum\limits_{i=k+1}^n \frac{{{K}\choose{i}} {{N-K}\choose{n-i}}}{{{N}\choose{n}}} $$
 Here, N is the total number of genes, K is the total number of tissue-specific genes for a tissue, n is the number of genes in the input gene set, k is the number of tissue-specific genes in the input gene set. The p-values were also corrected for the multiple hypotheses, using Bonferroni Hochberg correction.
