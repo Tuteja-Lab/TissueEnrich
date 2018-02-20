@@ -1,7 +1,5 @@
 ---
 title: "TissueEnrich"
-author: "Ashish Jain, Geetu Tuteja"
-date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 fig_width: 6 
 fig_height: 4 
@@ -22,37 +20,11 @@ knitr::opts_chunk$set(
 )
 ```
 
-# `TissueEnrich`
+`TissueEnrich` package is used to calculate tissue-specific gene enrichment in the input gene groups. The user can input the top expressed gene set from single-cell RNA-Seq data or co-expressed gene modules to identify the tissue-specificity in those datasets. It has the tissue-specific genes processed from large-scale RNA-Seq data of various tissues studies from Human protein atlas, GTEx, and mouse ENCODE data. The tissue-specific genes are calculated based on the algorithm from human protein atlas project [1]. The hypergeometric test is being used to calculate the tissue-specific gene enrichment in the input genes. `TissueEnrich` consists of three functions to calculate the tissue-specific genes and tissue-specific gene enrichment.
 
-`TissueEnrich` package is used to calculate tissue-specific gene enrichment using RNA-Seq data from Human protein atlas, GTEx, and mouse ENCODE data. The tissue-specific genes are calculated based on the algorithm from human protein atlas project [1]. Hypergeometric test is used to calculate the tissue-specific gene enrichment in the input genes. `TissueEnrich` consists of three functions to calculate the tissue-specific genes and tissue-specific gene enrichment.
-
+* `teEnrichment`: Calculation of tissue-specific gene enrichment in mouse and humans using hypergeometric test.
 * `teGeneRetrieval`: Calculation of tissue-specific genes by using the algorithm from the Human Protein Atlas project.
-* `teEnrichment`: Calculation of tissue-specific gene enrichment using hypergeometric test.
 * `teEnrichmentCustom`: Calculation of tissue-specific gene enrichment using custom datasets.
-
-# Using `teGeneRetrieval`
-
-This `teGeneRetrieval` function calculates the tissue-specific genes based on the algorithm from the Human Protein Atlas project [1]. The genes are divided into six groups based on their gene expression across the tissues. These groups are:
-
-* **Not Detected:** Genes whose mRNA expression is less than 1 (TPM/FPKM) across all the tissues.
-* **Tissue Enriched:** Genes whose mRNA expression is at least five-fold higher mRNA levels in a particular tissue as compared to all other tissues.
-* **Group Enriched:** Genes whose mRNA expression is at least five-fold higher mRNA levels in a group of 2-7 tissues and doesn't come in any of the above 2 groups.
-* **Tissue Enhanced:** Genes whose mRNA expression is at least five-fold higher mRNA levels in a particular tissue as compared to average levels in all tissues and doesn't come in any of the above 3 groups.
-* **Expressed in all:** Genes whose mRNA expression is greater than or equal to 1 (TPM/FPKM) across all the tissues and doesn't come in any of the above 4 groups.
-* **Mixed:** Genes that don’t occur in any of the above 5 groups.
-
-Out of these, **Tissue Enriched**, **Group Enriched**, and **Tissue Enhanced** groups are classified as tissue-enriched.
-
-The function `teGeneRetrieval` takes gene expression matrix as the input (rows as genes and columns as tissue) and calculates the tissue-specific genes. Although, the above mentioned criterias are specified in Human Protein Atlas [1], users can also change the different thresholds to calculate tissue-specific genes in their dataset. The output consists of a data frame with the following columns: Gene Name, Tissue Name, and Tissue-Specific Group.
-
-
-```{r eval=TRUE}
-library(TissueEnrich)
-data<-system.file("extdata", "test.expressiondata.txt", package = "TissueEnrich")
-expressionData<-read.table(data,header=TRUE,row.names=1,sep='\t')
-TSgenes<-teGeneRetrieval(expressionData)
-head(TSgenes)
-```
 
 # Using `teEnrichment`
 
@@ -64,7 +36,7 @@ The `teEnrichment` function is used to calculate tissue-specific gene enrichment
 
 Tissue-specificity in a user’s gene set will be determined based on the enrichment of tissue-specific genes in the above datasets. The tissue-specific genes in the datasets are calculated based on the thresholds specified in Human Protein Atlas. The tissue-specific gene enrichement is carried out using hypergeometric distribution.
 
-$$ P(X = k) = \frac{{{K}\choose{k}} {{N-K}\choose{n-k}}}{{{N}\choose{n}}} $$
+$$ P(X \gt k) = \sum\limits_{i=k+1}^n \frac{{{K}\choose{i}} {{N-K}\choose{n-i}}}{{{N}\choose{n}}} $$
 Here, N is the total number of genes, K is the total number of tissue-specific genes for a tissue, n is the number of genes in the input gene set, k is the number of tissue-specific genes in the input gene set. The p-values were also corrected for the multiple hypotheses, using Bonferroni Hochberg correction.
 
 There is also a flag to carry out multiple hypothesis correction using Bonferroni Hochberg method. In the example below, we used a gene list containing the top 100 polar genes found in a human single cell dataset [4].
@@ -90,11 +62,31 @@ ggplot(output[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tiss
       theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),panel.grid.major= element_blank(),panel.grid.minor = element_blank())
 ```
 
-The second object is a list containing the tissue-specific genes found in each tissue. For example, the code below retrieves the tissue-specific genes in placenta.
+The second object is a list containing the tissue-specific genes (with expression and tissue-specificity information) found in each tissue. For example, the code below retrieves the tissue-specific genes with their tissue-specificity in placenta.
 
 ```{r eval=TRUE}
-print("Placenta specific genes found in input genes are:")
-print(output[[2]][["Placenta"]])
+print("Placenta specific genes found in input genes with group specificity:")
+groupInf<-output[[2]][["Placenta"]][[2]]
+print(head(groupInf))
+```
+
+It can be used to plot the heatmap showing the expression values of the tissue-specific genes across all the tissues. For example, the code below plots the placenta tissue-specific genes expression across all the tissues.
+```{r eval=TRUE}
+library(tidyr)
+exp<-output[[2]][["Placenta"]][[1]]
+exp$Gene<-row.names(exp)
+exp<-exp %>% gather(Tissue=1:(ncol(exp)-1))
+
+ggplot(exp, aes(key, Gene)) + geom_tile(aes(fill = value),
+     colour = "white") + scale_fill_gradient(low = "white",
+     high = "steelblue")+
+     labs(x='', y = '')+
+      theme_bw()+
+      guides(fill = guide_legend(title = "Log2(TPM)"))+
+      #theme(legend.position="none")+
+      theme(plot.title = element_text(hjust = 0.5,size = 20),axis.title = element_text(size=15))+
+      theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),panel.grid.major= element_blank(),panel.grid.minor = element_blank())
+
 ```
 
 The third object is a character vector consisting of a list of input genes that are not in our dataset.
@@ -118,6 +110,29 @@ ggplot(output[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tiss
       theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),panel.grid.major= element_blank(),panel.grid.minor = element_blank())
 ```
 
+# Using `teGeneRetrieval`
+
+This `teGeneRetrieval` function calculates the tissue-specific genes based on the algorithm from the Human Protein Atlas project [1]. The genes are divided into six groups based on their gene expression across the tissues. These groups are:
+
+* **Not Detected:** Genes whose mRNA expression is less than 1 (TPM/FPKM) across all the tissues.
+* **Tissue Enriched:** Genes whose mRNA expression is at least five-fold higher mRNA levels in a particular tissue as compared to all other tissues.
+* **Group Enriched:** Genes whose mRNA expression is at least five-fold higher mRNA levels in a group of 2-7 tissues and doesn't come in any of the above 2 groups.
+* **Tissue Enhanced:** Genes whose mRNA expression is at least five-fold higher mRNA levels in a particular tissue as compared to average levels in all tissues and doesn't come in any of the above 3 groups.
+* **Expressed in all:** Genes whose mRNA expression is greater than or equal to 1 (TPM/FPKM) across all the tissues and doesn't come in any of the above 4 groups.
+* **Mixed:** Genes that don’t occur in any of the above 5 groups.
+
+Out of these, **Tissue Enriched**, **Group Enriched**, and **Tissue Enhanced** groups are classified as tissue-enriched.
+
+The function `teGeneRetrieval` takes gene expression matrix as the input (rows as genes and columns as tissue) and calculates the tissue-specific genes. Although, the above mentioned criterias are specified in Human Protein Atlas [1], users can also change the different thresholds to calculate tissue-specific genes in their dataset. The output consists of a data frame with the following columns: Gene Name, Tissue Name, and Tissue-Specific Group.
+
+
+```{r eval=TRUE}
+library(TissueEnrich)
+data<-system.file("extdata", "test.expressiondata.txt", package = "TissueEnrich")
+expressionData<-read.table(data,header=TRUE,row.names=1,sep='\t')
+TSgenes<-teGeneRetrieval(expressionData)
+head(TSgenes)
+```
 
 # Using `teEnrichmentCustom`
 

@@ -25,7 +25,9 @@ teEnrichment(inputGenes = NULL, rnaSeqDataset = 1, organism = 1,
 \item{isHomolog}{Flag to use orthologus genes. Default FALSE.}
 }
 \value{
-A list object with three objects, first is the enrichment matrix, second is the list containing the tissue-specific genes found in the input genes,
+A list object with three objects, first is the enrichment matrix,
+second is the list containing the expression values and tissue-specificity information
+of the tissue-specific genes found in the input genes,
 third is the vector containing genes not found in our RNA-Seq datasets.
 }
 \description{

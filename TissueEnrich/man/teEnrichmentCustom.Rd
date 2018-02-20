@@ -17,8 +17,10 @@ teEnrichmentCustom(inputGenes = NULL, tissueSpecificGenes = NULL,
 \item{multiHypoCorrection}{Flag to correct P-values for multiple hypothesis using BH method. Default TRUE.}
 }
 \value{
-A list object with three objects, first is the enrichment matrix, second is the list containing the tissue-specific genes found in the input genes,
-third is the vector containing genes not found in the data.
+A list object with three objects, first is the enrichment matrix,
+second is the list containing the tissue-specificity information
+of the tissue-specific genes found in the input genes,
+third is the vector containing genes not found in our RNA-Seq datasets.
 }
 \description{
 This function is used to calculate the tissue-specific gene enrichment using the custom tissue-specific dataset.

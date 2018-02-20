@@ -4,7 +4,7 @@ library(ensurer)
 library(utils)
 
 ##To Supress Note
-utils::globalVariables(c(".", "%>%","Gene","Gene.name","Gene.stable.ID","Human.gene.name","Human.gene.stable.ID","Group","Tissue"))
+utils::globalVariables(c("dataset",".", "%>%","Gene","Gene.name","Gene.stable.ID","Human.gene.name","Human.gene.stable.ID","Group","Tissue"))
 
 #' Calculation of tissue-specific genes by using the algorithm from the Human Protein Atlas project
 #' @description This function is used to calculate the tissue-specific genes from the input gene expression using the algorithm from the Human Protein Atlas project.
@@ -40,6 +40,7 @@ teGeneRetrieval<-function(expressionData,foldChangeThreshold=5,maxNumberOfTissue
   for(gene in row.names(expressionData))
   {
     tpm<-data.frame(t(as.matrix(expressionData[gene,])))
+    colnames(tpm)<-c(gene)
     tpm<-tpm[with(tpm, order(-tpm[gene])), ,drop = FALSE]
     highTPM<-tpm[1,]
     ####Check for Not Expressed
@@ -169,7 +170,9 @@ teGeneRetrieval<-function(expressionData,foldChangeThreshold=5,maxNumberOfTissue
 #' @param geneFormat Type of gene symbol to be used for input. 1 for "EnsemblId" (default), 2 for "Gene Symbol". Default 1.
 #' @param isHomolog Flag to use orthologus genes. Default FALSE.
 #' @export
-#' @return A list object with three objects, first is the enrichment matrix, second is the list containing the tissue-specific genes found in the input genes,
+#' @return A list object with three objects, first is the enrichment matrix,
+#' second is the list containing the expression values and tissue-specificity information
+#' of the tissue-specific genes found in the input genes,
 #' third is the vector containing genes not found in our RNA-Seq datasets.
 #' @examples
 #' library(dplyr)
@@ -378,12 +381,27 @@ teEnrichment<-function(inputGenes = NULL,
     overlapGenes<-length(intersect(tissueGenes$Gene,inputEnsemblGenes))
     if(geneFormat == 2)
     {
+      ##Dirty code to convert ensembl Id to gene names
       intGenes<- geneMappingForCurrentDataset %>% dplyr::filter(Gene %in% intersect(tissueGenes$Gene,inputEnsemblGenes))
-      overlapTissueGenesList[[as.character(tissueDetails[tissueDetails$RName == tissue,"TissueName"])]]<-as.character(intGenes$Gene.name)
+      teExpressionData<-expressionDataLocal[as.character(intGenes$Gene),]
+      genes<-as.factor(row.names(teExpressionData))
+      #levels(genes)<-levels(geneMappingForCurrentDataset$Gene)
+      teExpressionData$Gene<-genes
+      teExpressionData<-left_join(teExpressionData,geneMappingForCurrentDataset, by = "Gene")
+      row.names(teExpressionData)<-teExpressionData[,ncol(teExpressionData)]
+      teExpressionData<-teExpressionData[,1:(ncol(teExpressionData)-2)]
+      ##Dirty code to convert ensembl Id for groups
+      teInputGeneGroups<-tissueGenes %>% dplyr::filter(Gene %in% intGenes$Gene) %>% select(Gene,Group)
+      teInputGeneGroups<-left_join(teInputGeneGroups,geneMappingForCurrentDataset, by = "Gene") %>% select(Gene.name,Group)
     }else
     {
-      overlapTissueGenesList[[as.character(tissueDetails[tissueDetails$RName == tissue,"TissueName"])]]<-intersect(tissueGenes$Gene,inputEnsemblGenes)
+      teExpressionData<- expressionDataLocal[intersect(tissueGenes$Gene,inputEnsemblGenes),]
+      teInputGeneGroups<-tissueGenes[inputEnsemblGenes,c("Gene","Group")]
     }
+    colnames(teInputGeneGroups) <-c("Gene","Group")
+    colnames(teExpressionData)<-tissueDetails$TissueName
+    teExpressionData<-log2(teExpressionData+1)
+    overlapTissueGenesList[[as.character(tissueDetails[tissueDetails$RName == tissue,"TissueName"])]]<-list(teExpressionData,teInputGeneGroups)
     GenesInTissue<-nrow(tissueGenes)
     pValue<-stats::phyper(overlapGenes-1,GenesInTissue,nrow(geneMappingForCurrentDataset)-GenesInTissue,length(inputEnsemblGenes),lower.tail = FALSE)
     pValueList<-c(pValueList,pValue)
@@ -412,8 +430,10 @@ teEnrichment<-function(inputGenes = NULL,
 #' @param tissueSpecificGeneType An integer describing the type of tissue-specific genes to be used. 1 for "All" (default), 2 for "Tissue-Enriched",3 for "Tissue-Enhanced", and 4 for "Group-Enriched". Default 1.
 #' @param multiHypoCorrection Flag to correct P-values for multiple hypothesis using BH method. Default TRUE.
 #' @export
-#' @return A list object with three objects, first is the enrichment matrix, second is the list containing the tissue-specific genes found in the input genes,
-#' third is the vector containing genes not found in the data.
+#' @return A list object with three objects, first is the enrichment matrix,
+#' second is the list containing the tissue-specificity information
+#' of the tissue-specific genes found in the input genes,
+#' third is the vector containing genes not found in our RNA-Seq datasets.
 #' @examples
 #' library(dplyr)
 #' library(ggplot2)
@@ -477,7 +497,9 @@ teEnrichmentCustom<-function(inputGenes=NULL,tissueSpecificGenes=NULL,
   {
     tissueGenes<-finalTissueSpecificGenes %>% dplyr::filter(Tissue==tissue)
     overlapGenes<-length(intersect(tissueGenes$Gene,inputEnsemblGenes))
-    overlapTissueGenesList[[tissue]]<-intersect(tissueGenes$Gene,inputEnsemblGenes)
+    #teExpressionData<- expressionDataLocal[intersect(tissueGenes$Gene,inputEnsemblGenes),]
+    teInputGeneGroups<-tissueGenes[tissueGenes$Gene == inputEnsemblGenes,c("Gene","Group")]
+    overlapTissueGenesList[[tissue]]<-teInputGeneGroups
     GenesInTissue<-nrow(tissueGenes)
     pValue<-stats::phyper(overlapGenes-1,GenesInTissue,length(totalGenes)-GenesInTissue,length(inputEnsemblGenes),lower.tail = FALSE)
     pValueList<-c(pValueList,pValue)
