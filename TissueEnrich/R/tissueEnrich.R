@@ -168,7 +168,6 @@ teGeneRetrieval<-function(expressionData,foldChangeThreshold=5,maxNumberOfTissue
 #' 1 for "All" (default), 2 for "Tissue-Enriched", 3 for "Tissue-Enhanced", and 4 for "Group-Enriched". Default 1.
 #' @param multiHypoCorrection Flag to correct P-values for multiple hypothesis using BH method. Default TRUE.
 #' @param geneFormat Type of gene symbol to be used for input. 1 for "EnsemblId" (default), 2 for "Gene Symbol". Default 1.
-#' @param isHomolog Flag to use orthologus genes. Default FALSE.
 #' @export
 #' @return A list object with three objects, first is the enrichment matrix,
 #' second is the list containing the expression values and tissue-specificity information
@@ -194,7 +193,7 @@ teGeneRetrieval<-function(expressionData,foldChangeThreshold=5,maxNumberOfTissue
 teEnrichment<-function(inputGenes = NULL,
                                        rnaSeqDataset=1,#c("Human Protein Atlas","GTEx combine","GTEx sub-tissue","Mouse ENCODE"),
                                        organism=1,tissueSpecificGeneType=1,multiHypoCorrection=TRUE,
-                                       geneFormat=1,isHomolog=FALSE)
+                                       geneFormat=1)
 {
   ###Add checks for the conditions
   inputGenes<-ensurer::ensure_that(inputGenes, !is.null(.) && is.vector(.),err_desc = "Please enter correct inputGenes. It should be a character vector")
@@ -202,11 +201,12 @@ teEnrichment<-function(inputGenes = NULL,
   organism<-ensurer::ensure_that(organism, !is.null(.) && is.numeric(.) && . <=2 || . >=1,err_desc = "Please enter correct organism. It should be either 1 for Homo Sapiens, 2 for Mus Musculus.")
   geneFormat<-ensurer::ensure_that(geneFormat,!is.null(.) && is.numeric(.) && . <=2 || . >=1,err_desc = "Please enter correct geneFormat. It should be either 1 for EnsemblId, 2 for Gene Symbol.")
   tissueSpecificGeneType<-ensurer::ensure_that(tissueSpecificGeneType,!is.null(.) && is.numeric(.)  && . <=4 || . >=1,err_desc = "Please enter correct tissueSpecificGeneType. It should be 1 for All, 2 for Tissue-Enriched,3 for Tissue-Enhanced, and 4 for Group-Enriched")
-  isHomolog<-ensurer::ensure_that(isHomolog,!is.null(.) && is.logical(.) ,err_desc = "Please enter correct isHomolog. It should be either TRUE or FALSE")
+  #isHomolog<-ensurer::ensure_that(isHomolog,!is.null(.) && is.logical(.) ,err_desc = "Please enter correct isHomolog. It should be either TRUE or FALSE")
   multiHypoCorrection<-ensurer::ensure_that(multiHypoCorrection,!is.null(.) && is.logical(.) ,err_desc = "Please enter correct multiHypoCorrection. It should be either TRUE or FALSE")
   ##Enviroment to load datasets
   #env<-loading("data/combine-expression.rda")
   ##Load gene mapping and orthologs Data
+  isHomolog<-FALSE
   e <- new.env()
   load(file = system.file("extdata", "combine-expression.rda", package = "TissueEnrich"),envir = e)
   if(rnaSeqDataset == 1)
@@ -235,9 +235,17 @@ teEnrichment<-function(inputGenes = NULL,
   if(organism == 1)#"Homo Sapiens")
   {
     geneMapping<-e$dataset$humanGeneMapping
+    if(rnaSeqDataset == 3)
+    {
+      isHomolog<-TRUE
+    }
   }else if(organism == 2)#"Mus Musculus")
   {
     geneMapping<-e$dataset$mouseGeneMapping
+    if(rnaSeqDataset == 1 || rnaSeqDataset == 2)
+    {
+      isHomolog<-TRUE
+    }
   }else
   {
     stop("Please enter correct organism.",call. = FALSE)

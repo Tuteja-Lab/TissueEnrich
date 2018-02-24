@@ -5,8 +5,7 @@
 \title{Calculation of tissue-specific gene enrichment using hypergeometric test}
 \usage{
 teEnrichment(inputGenes = NULL, rnaSeqDataset = 1, organism = 1,
-  tissueSpecificGeneType = 1, multiHypoCorrection = TRUE, geneFormat = 1,
-  isHomolog = FALSE)
+  tissueSpecificGeneType = 1, multiHypoCorrection = TRUE, geneFormat = 1)
 }
 \arguments{
 \item{inputGenes}{A vector containing the input genes.}
@@ -21,8 +20,6 @@ teEnrichment(inputGenes = NULL, rnaSeqDataset = 1, organism = 1,
 \item{multiHypoCorrection}{Flag to correct P-values for multiple hypothesis using BH method. Default TRUE.}
 
 \item{geneFormat}{Type of gene symbol to be used for input. 1 for "EnsemblId" (default), 2 for "Gene Symbol". Default 1.}
-
-\item{isHomolog}{Flag to use orthologus genes. Default FALSE.}
 }
 \value{
 A list object with three objects, first is the enrichment matrix,
