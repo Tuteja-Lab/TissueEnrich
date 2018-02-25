@@ -159,7 +159,7 @@ teGeneRetrieval<-function(expressionData,foldChangeThreshold=5,maxNumberOfTissue
 
 #' Calculation of tissue-specific gene enrichment using hypergeometric test
 #'
-#' @description This function is used to calculate the tissue-specific gene enrichment using the various human and mouse dataset.
+#' @description This function is used to calculate the tissue-specific gene enrichment using the human and mouse datasets.
 #' @author Ashish Jain, Geetu Tuteja
 #' @param inputGenes A vector containing the input genes.
 #' @param rnaSeqDataset An integer describing the dataset to be used for enrichment analysis. 1 for "Human Protein Atlas" (default), 2 for "GTEx Tissues", 3 for "Mouse ENCODE". Default 1.
@@ -169,7 +169,7 @@ teGeneRetrieval<-function(expressionData,foldChangeThreshold=5,maxNumberOfTissue
 #' @param multiHypoCorrection Flag to correct P-values for multiple hypothesis using BH method. Default TRUE.
 #' @param geneFormat Type of gene symbol to be used for input. 1 for "EnsemblId" (default), 2 for "Gene Symbol". Default 1.
 #' @export
-#' @return A list object with three objects, first is the enrichment matrix,
+#' @return A list object with three items, first is the enrichment matrix,
 #' second is the list containing the expression values and tissue-specificity information
 #' of the tissue-specific genes found in the input genes,
 #' third is the vector containing genes not found in our RNA-Seq datasets.
@@ -437,7 +437,7 @@ teEnrichment<-function(inputGenes = NULL,
 #' @param tissueSpecificGeneType An integer describing the type of tissue-specific genes to be used. 1 for "All" (default), 2 for "Tissue-Enriched",3 for "Tissue-Enhanced", and 4 for "Group-Enriched". Default 1.
 #' @param multiHypoCorrection Flag to correct P-values for multiple hypothesis using BH method. Default TRUE.
 #' @export
-#' @return A list object with three objects, first is the enrichment matrix,
+#' @return A list object with three items, first is the enrichment matrix,
 #' second is the list containing the tissue-specificity information
 #' of the tissue-specific genes found in the input genes,
 #' third is the vector containing genes not found in our RNA-Seq datasets.
