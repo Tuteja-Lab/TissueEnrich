@@ -22,13 +22,13 @@ teEnrichment(inputGenes = NULL, rnaSeqDataset = 1, organism = 1,
 \item{geneFormat}{Type of gene symbol to be used for input. 1 for "EnsemblId" (default), 2 for "Gene Symbol". Default 1.}
 }
 \value{
-A list object with three objects, first is the enrichment matrix,
+A list object with three items, first is the enrichment matrix,
 second is the list containing the expression values and tissue-specificity information
 of the tissue-specific genes found in the input genes,
 third is the vector containing genes not found in our RNA-Seq datasets.
 }
 \description{
-This function is used to calculate the tissue-specific gene enrichment using the various human and mouse dataset.
+This function is used to calculate the tissue-specific gene enrichment using the human and mouse datasets.
 }
 \examples{
 library(dplyr)
