@@ -28,7 +28,8 @@ of the tissue-specific genes found in the input genes,
 third is the vector containing genes not found in our RNA-Seq datasets.
 }
 \description{
-This function is used to calculate the tissue-specific gene enrichment using the human and mouse datasets.
+This function calculates the tissue-specific gene enrichment in the
+input gene set using the human and mouse datasets.
 }
 \examples{
 library(dplyr)

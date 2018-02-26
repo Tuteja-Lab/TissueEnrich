@@ -20,7 +20,7 @@ teGeneRetrieval(expressionData, foldChangeThreshold = 5,
 A data frame object with three columns, Gene, Tissues, and Enrichment group of the gene in the given tissue.
 }
 \description{
-This function is used to calculate the tissue-specific genes from the input gene expression using the algorithm from the Human Protein Atlas project.
+This function calculates the tissue-specific genes from the input gene expression data using the algorithm from the Human Protein Atlas project.
 }
 \examples{
 data<-system.file("extdata", "test.expressiondata.txt", package = "TissueEnrich")

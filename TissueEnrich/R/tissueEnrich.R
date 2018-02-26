@@ -7,7 +7,7 @@ library(utils)
 utils::globalVariables(c("dataset",".", "%>%","Gene","Gene.name","Gene.stable.ID","Human.gene.name","Human.gene.stable.ID","Group","Tissue"))
 
 #' Calculation of tissue-specific genes by using the algorithm from the Human Protein Atlas project
-#' @description This function is used to calculate the tissue-specific genes from the input gene expression using the algorithm from the Human Protein Atlas project.
+#' @description This function calculates the tissue-specific genes from the input gene expression data using the algorithm from the Human Protein Atlas project.
 #' @author Ashish Jain, Geetu Tuteja
 #' @param expressionData A dataframe object containing gene expression values (Rows are genes and Tissues are columns).
 #' @param foldChangeThreshold A numeric Threshold of fold change, default 5.
@@ -159,7 +159,8 @@ teGeneRetrieval<-function(expressionData,foldChangeThreshold=5,maxNumberOfTissue
 
 #' Calculation of tissue-specific gene enrichment using hypergeometric test
 #'
-#' @description This function is used to calculate the tissue-specific gene enrichment using the human and mouse datasets.
+#' @description This function calculates the tissue-specific gene enrichment in the
+#' input gene set using the human and mouse datasets.
 #' @author Ashish Jain, Geetu Tuteja
 #' @param inputGenes A vector containing the input genes.
 #' @param rnaSeqDataset An integer describing the dataset to be used for enrichment analysis. 1 for "Human Protein Atlas" (default), 2 for "GTEx Tissues", 3 for "Mouse ENCODE". Default 1.
@@ -430,7 +431,7 @@ teEnrichment<-function(inputGenes = NULL,
 
 
 #' Calculation of tissue-specific gene enrichment using hypergeometric test for custom datasets
-#' @description This function is used to calculate the tissue-specific gene enrichment using the custom tissue-specific dataset.
+#' @description This function calculates the tissue-specific gene enrichment in the input gene set using the custom tissue-specific genes dataset.
 #' @author Ashish Jain, Geetu Tuteja
 #' @param inputGenes A vector containing the input genes.
 #' @param tissueSpecificGenes A dataframe object. Output from `teGeneRetrieval` function. Default NULL.
