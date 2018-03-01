@@ -2,7 +2,7 @@
 library(dplyr)
 library(ensurer)
 library(utils)
-
+options( warn = -1 )
 ##To Supress Note
 utils::globalVariables(c("dataset",".", "%>%","Gene","Gene.name","Gene.stable.ID","Human.gene.name","Human.gene.stable.ID","Group","Tissue"))
 
@@ -397,11 +397,29 @@ teEnrichment<-function(inputGenes = NULL,
       #levels(genes)<-levels(geneMappingForCurrentDataset$Gene)
       teExpressionData$Gene<-genes
       teExpressionData<-left_join(teExpressionData,geneMappingForCurrentDataset, by = "Gene")
-      row.names(teExpressionData)<-teExpressionData[,ncol(teExpressionData)]
-      teExpressionData<-teExpressionData[,1:(ncol(teExpressionData)-2)]
+      #row.names(teExpressionData)<-teExpressionData[,ncol(teExpressionData)-1]
+
+      if(nrow(teExpressionData) > 0)
+      {
+        #####Code to take the mean of the genes with multiple ensembl Ids.
+        res <- as.data.frame( # sapply returns a list here, so we convert it to a data.frame
+          t(sapply(unique(teExpressionData$Gene.name), # for each unique column name
+                   function(col) colMeans(teExpressionData[teExpressionData$Gene.name == col,c(1:(ncol(teExpressionData)-2))]) # calculate row means
+          )
+          )
+        )
+        teExpressionData<-res
+      }else
+      {
+        teExpressionData<-teExpressionData[,1:(ncol(teExpressionData)-2)]
+      }
+
+      #teExpressionData<-teExpressionData[,1:(ncol(teExpressionData)-2)]
       ##Dirty code to convert ensembl Id for groups
       teInputGeneGroups<-tissueGenes %>% dplyr::filter(Gene %in% intGenes$Gene) %>% select(Gene,Group)
       teInputGeneGroups<-left_join(teInputGeneGroups,geneMappingForCurrentDataset, by = "Gene") %>% select(Gene.name,Group)
+      ##Code to remove gene names with
+      teInputGeneGroups<-unique(teInputGeneGroups)
     }else
     {
       teExpressionData<- expressionDataLocal[intersect(tissueGenes$Gene,inputEnsemblGenes),]

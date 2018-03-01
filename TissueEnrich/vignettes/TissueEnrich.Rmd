@@ -41,7 +41,7 @@ The `TissueEnrich` package is used to calculate enrichment of tissue-specific ge
 * `teEnrichmentCustom`: Given the input gene set, calculates the tissue-specific gene enrichment using tissue-specific genes, identified from the `teGeneRetrieval` function.
 
 # How to get help for TissueEnrich
-Please post all the questions or queries related to TissueEnrich package on the **Bioconductor support website**. This will help us to build a information repository which can be used by other users.
+Please post all the questions or queries related to TissueEnrich package on the **Bioconductor support website**. This will help us to build an information repository which can be used by other users.
 
 [https://support.bioconductor.org](https://support.bioconductor.org)
 
@@ -49,12 +49,12 @@ Please **do not** email your questions directly to the package authors.
 
 # `teEnrichment`: Tissue-specific gene enrichment in human and mouse
 
-The `teEnrichment` function carries out the tissue-specific gene enrichment in the input gene set. It uses the tissue-specific gene groups identified by processing RNA-Seq datasets in human and mouse. The user can specify the organism by using `organism` argument (1 for "Homo Sapiens" (default) and 2 for "Mus Musculus"). More details about the RNA-Seq datasets and tissue-specific groups are discussed in the next sections.
+The `teEnrichment` function calculates the tissue-specific gene enrichment in the input gene set. It uses the tissue-specific gene groups identified by processing RNA-Seq datasets in human and mouse. The user can specify the organism by using `organism` argument (1 for "Homo Sapiens" (default) and 2 for "Mus Musculus"). More details about the RNA-Seq datasets and tissue-specific groups are discussed in the next sections.
 
 ## RNA-Seq datasets
 `TissueEnrich` consists of tissue-specific genes identified from widely popular and studied RNA-Seq datasets, having expression data across a variety of tissues. In order to make the tissue-specific genes more robust, tissues only with expression data from more than or equal to 2 biological replicates are selected. The datasets used in the tool are:
 
-* **Human Protein Atlas:** RNA-Seq data across 35 human tissues [@HPA2015].
+* **HPA Dataset:** RNA-Seq data across 35 human tissues [@HPA2015].
 * **GTEx Dataset:** RNA-Seq data across 29 human tissues [@GTEx2015].
 * **Mouse ENCODE Dataset:** RNA-Seq data across 17 mouse tissues [@ENCODE2012].
 
@@ -115,7 +115,7 @@ ggplot(output[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tiss
       theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),panel.grid.major= element_blank(),panel.grid.minor = element_blank())
 ```
 
-In the plot above, the x-axis represents the tissues and the y-axis represents the $-Log_{10}(P-Value)$ value. As expected, the 100 TE-specific genes shows enrichment of placenta specific genes.
+In the plot above, the x-axis represents the tissues and the y-axis represents the $-Log_{10}(P-Value)$ value. As expected, the 100 TE-specific genes show enrichment of placenta specific genes.
 
 #### Heatmap to show expression profiles of tissue-specific genes using `ggplot2`
 The second object in the `output` list is a list containing the tissue-specific genes (with expression and tissue-specificity information) found in each tissue. The first item in this list has expression values of the tissue-specific genes identified in the input genes across all the tissues. The expression values can be visualized in the form of a heatmap. For example, the code below shows the placenta tissue-specific genes expression across all the tissues.
@@ -186,7 +186,7 @@ The genes are divided into six groups based on their gene expression across the 
 * **Group Enriched:** Genes whose mRNA expression is at least five-fold higher mRNA levels in a group of 2-7 tissues and doesn't come in any of the above 2 groups.
 * **Tissue Enhanced:** Genes whose mRNA expression is at least five-fold higher mRNA levels in a particular tissue as compared to average levels in all tissues and doesn't come in any of the above 3 groups.
 * **Expressed in all:** Genes whose mRNA expression is greater than or equal to 1 (TPM/FPKM) across all the tissues and doesn't come in any of the above 4 groups.
-* **Mixed:** Genes that don’t occur in any of the above 5 groups.
+* **Mixed:** Genes that do not occur in any of the other 5 groups.
 
 Out of these groups, the **Tissue Enriched**, **Group Enriched**, and **Tissue Enhanced** groups are classified as tissue-specific.
 
