@@ -2,7 +2,7 @@
 library(dplyr)
 library(ensurer)
 library(utils)
-options( warn = -1 )
+
 ##To Supress Note
 utils::globalVariables(c("dataset",".", "%>%","Gene","Gene.name","Gene.stable.ID","Human.gene.name","Human.gene.stable.ID","Group","Tissue"))
 
@@ -156,7 +156,6 @@ teGeneRetrieval<-function(expressionData,foldChangeThreshold=5,maxNumberOfTissue
 #   e
 # }
 
-
 #' Calculation of tissue-specific gene enrichment using hypergeometric test
 #'
 #' @description This function calculates the tissue-specific gene enrichment in the
@@ -206,6 +205,9 @@ teEnrichment<-function(inputGenes = NULL,
   multiHypoCorrection<-ensurer::ensure_that(multiHypoCorrection,!is.null(.) && is.logical(.) ,err_desc = "Please enter correct multiHypoCorrection. It should be either TRUE or FALSE")
   ##Enviroment to load datasets
   #env<-loading("data/combine-expression.rda")
+  # withCallingHandlers(warning("Column `Gene` joining factors with different levels, coercing to character vector"), warning = function(w) {
+  #   print("No")
+  # })
   ##Load gene mapping and orthologs Data
   isHomolog<-FALSE
   e <- new.env()
@@ -396,7 +398,12 @@ teEnrichment<-function(inputGenes = NULL,
       genes<-as.factor(row.names(teExpressionData))
       #levels(genes)<-levels(geneMappingForCurrentDataset$Gene)
       teExpressionData$Gene<-genes
+
+      ##Supress warnings due to different levels in factors
+      oldw <- getOption("warn")
+      options(warn = -1)
       teExpressionData<-left_join(teExpressionData,geneMappingForCurrentDataset, by = "Gene")
+      options(warn = oldw)
       #row.names(teExpressionData)<-teExpressionData[,ncol(teExpressionData)-1]
 
       if(nrow(teExpressionData) > 0)
@@ -417,7 +424,12 @@ teEnrichment<-function(inputGenes = NULL,
       #teExpressionData<-teExpressionData[,1:(ncol(teExpressionData)-2)]
       ##Dirty code to convert ensembl Id for groups
       teInputGeneGroups<-tissueGenes %>% dplyr::filter(Gene %in% intGenes$Gene) %>% select(Gene,Group)
+
+      ##Supress warnings due to different levels in factors
+      oldw <- getOption("warn")
+      options(warn = -1)
       teInputGeneGroups<-left_join(teInputGeneGroups,geneMappingForCurrentDataset, by = "Gene") %>% select(Gene.name,Group)
+      options(warn = oldw)
       ##Code to remove gene names with
       teInputGeneGroups<-unique(teInputGeneGroups)
     }else
