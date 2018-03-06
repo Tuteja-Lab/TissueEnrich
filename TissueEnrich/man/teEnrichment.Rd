@@ -2,7 +2,7 @@
 % Please edit documentation in R/tissueEnrich.R
 \name{teEnrichment}
 \alias{teEnrichment}
-\title{Calculation of tissue-specific gene enrichment using hypergeometric test}
+\title{Calculate tissue-specific gene enrichment using hypergeometric test}
 \usage{
 teEnrichment(inputGenes = NULL, rnaSeqDataset = 1, organism = 1,
   tissueSpecificGeneType = 1, multiHypoCorrection = TRUE, geneFormat = 1)
@@ -25,11 +25,12 @@ teEnrichment(inputGenes = NULL, rnaSeqDataset = 1, organism = 1,
 A list object with three items, first is the enrichment matrix,
 second is the list containing the expression values and tissue-specificity information
 of the tissue-specific genes found in the input genes,
-third is the vector containing genes not found in our RNA-Seq datasets.
+third is the vector containing genes that could not be mapped to our RNA-Seq datasets.
 }
 \description{
-This function calculates the tissue-specific gene enrichment in the
-input gene set using the human and mouse datasets.
+The teEnrichment function is used to calculate the enrichment of tissue-specific gene groups,
+given an input gene set. It uses the tissue-specific gene groups identified by processing RNA-Seq datasets
+in human and mouse.
 }
 \examples{
 library(dplyr)

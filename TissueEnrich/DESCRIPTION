@@ -10,7 +10,7 @@ Author@R: person(“Ashish Jain”, "Package Creator and Maintainer",
 Maintainer: Ashish Jain <jain@iastate.edu>
 Description: This package is used to calculate the tissue-specific gene enrichment.
     In this package, the tissue-specific gene enrichment can be done using RNA-Seq data from Human protein atlas, GTEx, and mouse ENCODE data. This package also has the function to calculate the tissue-specific genes in the custom dataset which can be used to tissue-specific gene enrichment.
-License: Artistic-2.0
+License: GPL-3
 VignetteBuilder: knitr
 Depends:
     R (>= 3.2),

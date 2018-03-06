@@ -2,7 +2,7 @@
 % Please edit documentation in R/tissueEnrich.R
 \name{teGeneRetrieval}
 \alias{teGeneRetrieval}
-\title{Calculation of tissue-specific genes by using the algorithm from the Human Protein Atlas project}
+\title{Calculate tissue-specific genes by using the algorithm from the Human Protein Atlas project}
 \usage{
 teGeneRetrieval(expressionData, foldChangeThreshold = 5,
   maxNumberOfTissues = 7, expressedGeneThreshold = 1)
@@ -20,7 +20,9 @@ teGeneRetrieval(expressionData, foldChangeThreshold = 5,
 A data frame object with three columns, Gene, Tissues, and Enrichment group of the gene in the given tissue.
 }
 \description{
-This function calculates the tissue-specific genes from the input gene expression data using the algorithm from the Human Protein Atlas project.
+This teGeneRetrieval function divides the genes into tissue-specific groups, based on the algorithm
+used in Human Protein Atlas project. It takes a gene expression matrix as input (rows as genes and columns as tissue)
+and classifies the genes into tissue-specific groups. More detail about the gene groups is provided in the vignette.
 }
 \examples{
 data<-system.file("extdata", "test.expressiondata.txt", package = "TissueEnrich")
