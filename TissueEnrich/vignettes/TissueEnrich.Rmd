@@ -115,10 +115,10 @@ ggplot(output[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tiss
       theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),panel.grid.major= element_blank(),panel.grid.minor = element_blank())
 ```
 
-In the plot above, the x-axis has the tissues and the y-axis, the tissue-specific gene enrichment ($-Log_{10}(P-Value)$) values. As expected, the 100 TE-specific genes show enrichment for placenta specific genes.
+In the plot above, the x-axis consists of the tissues, and the y-axis represents the tissue-specific gene enrichment (−Log10(P−Value)) value. As expected, the 100 TE-specific genes show enrichment for placenta specific genes.
 
 #### Heatmap to show expression profiles of tissue-specific genes using `ggplot2`
-The second object in the `output` is a list containing the tissue-specific genes (with expression and tissue-specificity information) found in the input gene set. The first item in this list has expression values of the tissue-specific genes identified in the input genes across all the tissues. The expression values can be visualized in the form of a heatmap. For example, the code below generates a heatmap that shows the information about the placenta tissue-specific gene expression across all the tissues.
+The second object in the `output` is a list containing the tissue-specific genes (with expression and tissue-specificity information) found in the input gene set. The first item in this list has expression values of the tissue-specific genes identified in the input genes across all the tissues. The expression values can be visualized in the form of a heatmap. For example, the code below generates a heatmap showing the expression of the placenta tissue-specific genes across all the tissues.
 
 ```{r eval=TRUE}
 library(tidyr)
@@ -154,7 +154,7 @@ print(output[[3]])
 ```
 
 ## Orthologous gene enrichment
-The `teEnrichment` function can calculate mouse tissue-specific gene enrichment from a human gene list or vice versa. For this, the user should select the mouse dataset for the input human genes or vice versa. The function will automatically carry out orthologous tissue-specific gene enrichment using one-to-one protein coding orthologous genes between human and mouse, downloaded from Ensembl V91 database [@Aken2016].
+The `teEnrichment` function can calculate mouse tissue-specific gene enrichment from a human gene list or vice versa. For this, the user must select either the mouse dataset for the input human genes or vice versa. The function will automatically carry out orthologous tissue-specific gene enrichment using one-to-one protein coding orthologous genes between human and mouse, downloaded from Ensembl V91 database [@Aken2016].
 
 ### Example: Tissue-specific gene enrichment of mouse tissues using input human genes
 In this example, the list of 100 TE-specific genes from the **Tissue-specific gene enrichment** example is used to carry out tissue-specific gene enrichment using the mouse ENCODE data.
@@ -181,11 +181,11 @@ The `teGeneRetrieval` function divides the genes into tissue-specific groups, ba
 ## Gene groups
 The genes are divided into six groups based on their gene expression across the tissues. These groups are:
 
-* **Not Detected:** Genes whose mRNA expression is less than 1 (TPM/FPKM) across all the tissues.
+* **Not Detected:** Genes whose mRNA expression is less than 1 (TPM or FPKM) across all the tissues.
 * **Tissue Enriched:** Genes whose mRNA expression is at least five-fold higher mRNA levels in a particular tissue as compared to all other tissues.
-* **Group Enriched:** Genes whose mRNA expression is at least five-fold higher mRNA levels in a group of 2-7 tissues and doesn't come in any of the above 2 groups.
-* **Tissue Enhanced:** Genes whose mRNA expression is at least five-fold higher mRNA levels in a particular tissue as compared to average levels in all tissues and doesn't come in any of the above 3 groups.
-* **Expressed in all:** Genes whose mRNA expression is greater than or equal to 1 (TPM/FPKM) across all the tissues and doesn't come in any of the above 4 groups.
+* **Group Enriched:** Genes whose mRNA expression is at least five-fold higher mRNA levels in a group of 2-7 tissues and do not come in any of the above 2 groups.
+* **Tissue Enhanced:** Genes whose mRNA expression is at least five-fold higher mRNA levels in a particular tissue as compared to average levels in all tissues and do not come in any of the above 3 groups.
+* **Expressed in all:** Genes whose mRNA expression is greater than or equal to 1 (TPM or FPKM) across all the tissues and do not come in any of the above 4 groups.
 * **Mixed:** Genes that do not occur in any of the other 5 groups.
 
 Out of these groups, the **Tissue Enriched**, **Group Enriched**, and **Tissue Enhanced** groups are classified as tissue-specific genes.
@@ -205,7 +205,7 @@ As seen above, the output is a data frame with columns having information about 
 
 # `teEnrichmentCustom`: Tissue-specific gene enrichment in custom expression datasets
 
-The `teEnrichmentCustom` function is used to calculate the tissue-specific gene enrichment, using the tissue-specific gene groups information from custom expression datasets, calculated from the `teGeneRetrieval` function.
+The `teEnrichmentCustom` function is used to calculate the tissue-specific gene enrichment, using tissue-specific gene groups information from custom expression datasets, calculated from the `teGeneRetrieval` function.
 
 ## Example: Tissue-specific gene enrichment in custom dataset
 The example uses 10 genes, randomly selected from the 36 genes used in the **Tissue-specific gene retrieval** example. The tissue-specific genes identified from the custom gene expression are used to calculate tissue-specific gene enrichment in the input gene set.
