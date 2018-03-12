@@ -322,7 +322,15 @@ teEnrichment<-function(inputGenes = NULL,
         genesNotFound<-c(length(genesNotFoundList),genesNotFoundList)
         inputEnsemblGenes<-intersect(row.names(expressionDataLocal),inputEnsemblGenes)
       }
-      geneMappingForCurrentDataset<-geneMappingForCurrentDataset %>% dplyr::select(Gene.stable.ID,Gene.name)
+
+      ###retreving mapping based on gene format.
+      if(geneFormat == 2)
+      {
+        geneMappingForCurrentDataset<-geneMappingForCurrentDataset %>% dplyr::select(Gene.stable.ID,Human.gene.name)
+      }else if(geneFormat == 1)
+      {
+        geneMappingForCurrentDataset<-geneMappingForCurrentDataset %>% dplyr::select(Gene.stable.ID,Human.gene.stable.ID)
+      }
       colnames(geneMappingForCurrentDataset)<-c("Gene","Gene.name")
 
     }else
@@ -350,7 +358,14 @@ teEnrichment<-function(inputGenes = NULL,
         genesNotFound<-c(length(genesNotFoundList),genesNotFoundList)
         inputEnsemblGenes<-intersect(row.names(expressionDataLocal),inputEnsemblGenes)
       }
-      geneMappingForCurrentDataset<-geneMappingForCurrentDataset %>% dplyr::select(Human.gene.stable.ID,Human.gene.name)
+      ###retreving mapping based on gene format.
+      if(geneFormat == 2)
+      {
+        geneMappingForCurrentDataset<-geneMappingForCurrentDataset %>% dplyr::select(Human.gene.stable.ID,Gene.name)
+      }else if(geneFormat == 1)
+      {
+        geneMappingForCurrentDataset<-geneMappingForCurrentDataset %>% dplyr::select(Human.gene.stable.ID,Gene.stable.ID)
+      }
       colnames(geneMappingForCurrentDataset)<-c("Gene","Gene.name")
     }
 
@@ -393,7 +408,7 @@ teEnrichment<-function(inputGenes = NULL,
   {
     tissueGenes<-finalTissueSpecificGenes %>% dplyr::filter(Tissue==tissue)
     overlapGenes<-length(intersect(tissueGenes$Gene,inputEnsemblGenes))
-    if(geneFormat == 2)
+    if(isHomolog || geneFormat == 2)
     {
       ##Dirty code to convert ensembl Id to gene names
       intGenes<- geneMappingForCurrentDataset %>% dplyr::filter(Gene %in% intersect(tissueGenes$Gene,inputEnsemblGenes))
@@ -407,6 +422,10 @@ teEnrichment<-function(inputGenes = NULL,
       options(warn = -1)
       teExpressionData<-left_join(teExpressionData,geneMappingForCurrentDataset, by = "Gene")
       options(warn = oldw)
+      if(isHomolog)
+      {
+        teExpressionData$Gene.name<-as.character(teExpressionData$Gene.name)
+      }
       #row.names(teExpressionData)<-teExpressionData[,ncol(teExpressionData)-1]
 
       if(nrow(teExpressionData) > 0)
