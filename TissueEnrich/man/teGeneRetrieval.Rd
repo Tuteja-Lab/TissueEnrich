@@ -2,7 +2,7 @@
 % Please edit documentation in R/tissueEnrich.R
 \name{teGeneRetrieval}
 \alias{teGeneRetrieval}
-\title{Calculate tissue-specific genes by using the algorithm from the Human Protein Atlas project}
+\title{Define tissue-specific genes by using the algorithm from the Human Protein Atlas}
 \usage{
 teGeneRetrieval(expressionData, foldChangeThreshold = 5,
   maxNumberOfTissues = 7, expressedGeneThreshold = 1)
@@ -17,12 +17,15 @@ teGeneRetrieval(expressionData, foldChangeThreshold = 5,
 \item{expressedGeneThreshold}{A numeric Minimum gene expression cutoff for the gene to be called as expressed, default 1.}
 }
 \value{
-A data frame object with three columns, Gene, Tissues, and Enrichment group of the gene in the given tissue.
+A data frame object with three columns: Gene, Tissue, and Enrichment group of the gene in the given tissue.
 }
 \description{
-This teGeneRetrieval function divides the genes into tissue-specific groups, based on the algorithm
-used in Human Protein Atlas project. It takes a gene expression matrix as input (rows as genes and columns as tissue)
-and classifies the genes into tissue-specific groups. More detail about the gene groups is provided in the vignette.
+The teGeneRetrieval function is used to define tissue-specific genes, using the algorithm
+from the HPA (Uhlén et al. 2015). It takes a gene expression matrix as input (rows as genes and
+columns as tissue) and classifies the genes into different gene groups. The users also have the option
+of changing the default thresholds to vary the degree of tissue specificity of genes. More details
+about the gene groups and HPA thresholds are provided below. More details about the gene groups are
+provided in the vignette.
 }
 \examples{
 data<-system.file("extdata", "test.expressiondata.txt", package = "TissueEnrich")

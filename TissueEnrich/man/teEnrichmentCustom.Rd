@@ -2,7 +2,7 @@
 % Please edit documentation in R/tissueEnrich.R
 \name{teEnrichmentCustom}
 \alias{teEnrichmentCustom}
-\title{Calculate tissue-specific gene enrichment using hypergeometric test for custom datasets}
+\title{Calculate tissue-specific gene enrichment using the hypergeometric test for custom datasets}
 \usage{
 teEnrichmentCustom(inputGenes = NULL, tissueSpecificGenes = NULL,
   tissueSpecificGeneType = 1, multiHypoCorrection = TRUE)
@@ -17,15 +17,14 @@ teEnrichmentCustom(inputGenes = NULL, tissueSpecificGenes = NULL,
 \item{multiHypoCorrection}{Flag to correct P-values for multiple hypothesis using BH method. Default TRUE.}
 }
 \value{
-A list object with three items, first is the enrichment matrix,
-second is the list containing the tissue-specificity information
-of the tissue-specific genes found in the input genes,
-third is the vector containing genes that could not be mapped to the custom dataset.
+The output is a list with three objects. The first object is the enrichment matrix, the second
+object  contains the expression values and tissue-specificity information of the tissue-specific genes
+for genes from the input gene set, and the third is a vector containing genes that were not identified
+in the tissue-specific gene data.
 }
 \description{
-The teEnrichmentCustom function is used to calculate the tissue-specific gene enrichment,
-using tissue-specific gene groups information from custom expression datasets, calculated from the
-teGeneRetrieval function.
+The teEnrichmentCustom function is used to calculate tissue-specific gene
+enrichment using tissue-specific genes defined using the teGeneRetrieval function.
 }
 \examples{
 library(dplyr)

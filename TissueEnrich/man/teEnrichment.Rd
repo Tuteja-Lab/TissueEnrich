@@ -2,7 +2,7 @@
 % Please edit documentation in R/tissueEnrich.R
 \name{teEnrichment}
 \alias{teEnrichment}
-\title{Calculate tissue-specific gene enrichment using hypergeometric test}
+\title{Calculate tissue-specific gene enrichment using the hypergeometric test}
 \usage{
 teEnrichment(inputGenes = NULL, rnaSeqDataset = 1, organism = 1,
   tissueSpecificGeneType = 1, multiHypoCorrection = TRUE, geneFormat = 1)
@@ -10,27 +10,27 @@ teEnrichment(inputGenes = NULL, rnaSeqDataset = 1, organism = 1,
 \arguments{
 \item{inputGenes}{A vector containing the input genes.}
 
-\item{rnaSeqDataset}{An integer describing the dataset to be used for enrichment analysis. 1 for "Human Protein Atlas" (default), 2 for "GTEx Tissues", 3 for "Mouse ENCODE". Default 1.}
+\item{rnaSeqDataset}{An integer describing the dataset to be used for enrichment analysis. 1 for "Human Protein Atlas" (default), 2 for "GTEx", 3 for "Mouse ENCODE". Default 1.}
 
-\item{organism}{An integer describing the organism. 1 for "Homo Sapiens" (default), 2 for "Mus Musculus". Default 1.}
+\item{organism}{An integer describing the organism the input gene set is from. 1 for "Homo Sapiens" (default), 2 for "Mus Musculus". Default 1.}
 
 \item{tissueSpecificGeneType}{An integer describing the type of tissue-specific genes to be used.
 1 for "All" (default), 2 for "Tissue-Enriched", 3 for "Tissue-Enhanced", and 4 for "Group-Enriched". Default 1.}
 
 \item{multiHypoCorrection}{Flag to correct P-values for multiple hypothesis using BH method. Default TRUE.}
 
-\item{geneFormat}{Type of gene symbol to be used for input. 1 for "EnsemblId" (default), 2 for "Gene Symbol". Default 1.}
+\item{geneFormat}{An integer describing the type of input gene list. 1 for "EnsemblId" (default), 2 for "Gene Symbol". Default 1.}
 }
 \value{
-A list object with three items, first is the enrichment matrix,
-second is the list containing the expression values and tissue-specificity information
-of the tissue-specific genes found in the input genes,
-third is the vector containing genes that could not be mapped to our RNA-Seq datasets.
+The output is a list with three objects. The first object is the enrichment matrix,
+the second object  contains the expression values and tissue-specificity information of the
+tissue-specific genes for genes from the input gene set, and the third is a vector containing
+genes that were not identified in the tissue-specific gene data.
 }
 \description{
-The teEnrichment function is used to calculate the enrichment of tissue-specific gene groups,
-given an input gene set. It uses the tissue-specific gene groups identified by processing RNA-Seq datasets
-in human and mouse.
+The teEnrichment function is used to calculate the enrichment of tissue-specific genes,
+given an input gene set. It uses tissue-specific genes defined by processing RNA-Seq datasets
+from human and mouse.
 }
 \examples{
 library(dplyr)

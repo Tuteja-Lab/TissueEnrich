@@ -6,17 +6,20 @@ library(utils)
 ##To Supress Note
 utils::globalVariables(c("dataset",".", "%>%","Gene","Gene.name","Gene.stable.ID","Human.gene.name","Human.gene.stable.ID","Group","Tissue"))
 
-#' Calculate tissue-specific genes by using the algorithm from the Human Protein Atlas project
-#' @description This teGeneRetrieval function divides the genes into tissue-specific groups, based on the algorithm
-#' used in Human Protein Atlas project. It takes a gene expression matrix as input (rows as genes and columns as tissue)
-#' and classifies the genes into tissue-specific groups. More detail about the gene groups is provided in the vignette.
+#' Define tissue-specific genes by using the algorithm from the Human Protein Atlas
+#' @description The teGeneRetrieval function is used to define tissue-specific genes, using the algorithm
+#' from the HPA (Uhlén et al. 2015). It takes a gene expression matrix as input (rows as genes and
+#' columns as tissue) and classifies the genes into different gene groups. The users also have the option
+#' of changing the default thresholds to vary the degree of tissue specificity of genes. More details
+#' about the gene groups and HPA thresholds are provided below. More details about the gene groups are
+#' provided in the vignette.
 #' @author Ashish Jain, Geetu Tuteja
 #' @param expressionData A dataframe object containing gene expression values (Rows are genes and Tissues are columns).
 #' @param foldChangeThreshold A numeric Threshold of fold change, default 5.
 #' @param maxNumberOfTissues A numeric Maximum number of tissues in a group for group enriched genes, default 7.
 #' @param expressedGeneThreshold A numeric Minimum gene expression cutoff for the gene to be called as expressed, default 1.
 #' @export
-#' @return A data frame object with three columns, Gene, Tissues, and Enrichment group of the gene in the given tissue.
+#' @return A data frame object with three columns: Gene, Tissue, and Enrichment group of the gene in the given tissue.
 #' @examples
 #' data<-system.file("extdata", "test.expressiondata.txt", package = "TissueEnrich")
 #' expressionData<-read.table(data,header=TRUE,row.names=1,sep='\t')
@@ -158,24 +161,24 @@ teGeneRetrieval<-function(expressionData,foldChangeThreshold=5,maxNumberOfTissue
 #   e
 # }
 
-#' Calculate tissue-specific gene enrichment using hypergeometric test
+#' Calculate tissue-specific gene enrichment using the hypergeometric test
 #'
-#' @description The teEnrichment function is used to calculate the enrichment of tissue-specific gene groups,
-#' given an input gene set. It uses the tissue-specific gene groups identified by processing RNA-Seq datasets
-#' in human and mouse.
+#' @description The teEnrichment function is used to calculate the enrichment of tissue-specific genes,
+#' given an input gene set. It uses tissue-specific genes defined by processing RNA-Seq datasets
+#' from human and mouse.
 #' @author Ashish Jain, Geetu Tuteja
 #' @param inputGenes A vector containing the input genes.
-#' @param rnaSeqDataset An integer describing the dataset to be used for enrichment analysis. 1 for "Human Protein Atlas" (default), 2 for "GTEx Tissues", 3 for "Mouse ENCODE". Default 1.
-#' @param organism An integer describing the organism. 1 for "Homo Sapiens" (default), 2 for "Mus Musculus". Default 1.
+#' @param rnaSeqDataset An integer describing the dataset to be used for enrichment analysis. 1 for "Human Protein Atlas" (default), 2 for "GTEx", 3 for "Mouse ENCODE". Default 1.
+#' @param organism An integer describing the organism the input gene set is from. 1 for "Homo Sapiens" (default), 2 for "Mus Musculus". Default 1.
 #' @param tissueSpecificGeneType An integer describing the type of tissue-specific genes to be used.
 #' 1 for "All" (default), 2 for "Tissue-Enriched", 3 for "Tissue-Enhanced", and 4 for "Group-Enriched". Default 1.
 #' @param multiHypoCorrection Flag to correct P-values for multiple hypothesis using BH method. Default TRUE.
-#' @param geneFormat Type of gene symbol to be used for input. 1 for "EnsemblId" (default), 2 for "Gene Symbol". Default 1.
+#' @param geneFormat An integer describing the type of input gene list. 1 for "EnsemblId" (default), 2 for "Gene Symbol". Default 1.
 #' @export
-#' @return A list object with three items, first is the enrichment matrix,
-#' second is the list containing the expression values and tissue-specificity information
-#' of the tissue-specific genes found in the input genes,
-#' third is the vector containing genes that could not be mapped to our RNA-Seq datasets.
+#' @return The output is a list with three objects. The first object is the enrichment matrix,
+#' the second object  contains the expression values and tissue-specificity information of the
+#' tissue-specific genes for genes from the input gene set, and the third is a vector containing
+#' genes that were not identified in the tissue-specific gene data.
 #' @examples
 #' library(dplyr)
 #' library(ggplot2)
@@ -482,21 +485,20 @@ teEnrichment<-function(inputGenes = NULL,
 }
 
 
-#' Calculate tissue-specific gene enrichment using hypergeometric test for custom datasets
+#' Calculate tissue-specific gene enrichment using the hypergeometric test for custom datasets
 #'
-#' @description The teEnrichmentCustom function is used to calculate the tissue-specific gene enrichment,
-#' using tissue-specific gene groups information from custom expression datasets, calculated from the
-#' teGeneRetrieval function.
+#' @description The teEnrichmentCustom function is used to calculate tissue-specific gene
+#' enrichment using tissue-specific genes defined using the teGeneRetrieval function.
 #' @author Ashish Jain, Geetu Tuteja
 #' @param inputGenes A vector containing the input genes.
 #' @param tissueSpecificGenes A dataframe object. Output from `teGeneRetrieval` function. Default NULL.
 #' @param tissueSpecificGeneType An integer describing the type of tissue-specific genes to be used. 1 for "All" (default), 2 for "Tissue-Enriched",3 for "Tissue-Enhanced", and 4 for "Group-Enriched". Default 1.
 #' @param multiHypoCorrection Flag to correct P-values for multiple hypothesis using BH method. Default TRUE.
 #' @export
-#' @return A list object with three items, first is the enrichment matrix,
-#' second is the list containing the tissue-specificity information
-#' of the tissue-specific genes found in the input genes,
-#' third is the vector containing genes that could not be mapped to the custom dataset.
+#' @return The output is a list with three objects. The first object is the enrichment matrix, the second
+#' object  contains the expression values and tissue-specificity information of the tissue-specific genes
+#' for genes from the input gene set, and the third is a vector containing genes that were not identified
+#' in the tissue-specific gene data.
 #' @examples
 #' library(dplyr)
 #' library(ggplot2)
