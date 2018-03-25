@@ -163,6 +163,7 @@ The `teEnrichment` function can calculate mouse tissue-specific gene enrichment 
 In this example, the list of 100 TE-specific genes from the **Tissue-specific gene enrichment** example is used to carry out tissue-specific gene enrichment using the mouse ENCODE data.
 
 ```{r eval=TRUE}
+library(TissueEnrich)
 library(ggplot2)
 genes<-system.file("extdata", "inputGenes.txt", package = "TissueEnrich")
 inputGenes<-scan(genes,character())
@@ -215,6 +216,8 @@ The `teEnrichmentCustom` function is used to calculate tissue-specific gene enri
 The example uses 10 genes, randomly selected from the 36 genes used in the **Tissue-specific gene retrieval** example. The tissue-specific genes identified from the custom gene expression are used to calculate tissue-specific gene enrichment in the input gene set.
 
 ```{r eval=FALSE}
+library(TissueEnrich)
+library(ggplot2)
 genes<-system.file("extdata", "inputGenesEnsembl.txt", package = "TissueEnrich")
 inputGenes<-scan(genes,character())
 output<-teEnrichmentCustom(inputGenes,TSgenes)
