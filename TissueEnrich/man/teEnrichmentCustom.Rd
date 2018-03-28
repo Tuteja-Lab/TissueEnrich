@@ -37,7 +37,8 @@ genes<-system.file("extdata", "inputGenesEnsembl.txt", package = "TissueEnrich")
 inputGenes<-scan(genes,character())
 output<-teEnrichmentCustom(inputGenes,TSgenes)
 #Plotting the P-Values
-ggplot(output[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tissue.Specific.Genes,fill = Tissue))+
+ggplot(output[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,
+label = Tissue.Specific.Genes,fill = Tissue))+
 geom_bar(stat = 'identity')+
 labs(x='', y = '-LOG10(P-Value)')+
 theme_bw()+

@@ -186,7 +186,8 @@ teGeneRetrieval<-function(expressionData,foldChangeThreshold=5,maxNumberOfTissue
 #' inputGenes<-scan(genes,character())
 #' output<-teEnrichment(inputGenes,geneFormat=2)
 #' #Plotting the P-Values
-#' ggplot(output[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tissue.Specific.Genes,fill = Tissue))+
+#' ggplot(output[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,
+#' label = Tissue.Specific.Genes,fill = Tissue))+
 #' geom_bar(stat = 'identity')+
 #' labs(x='', y = '-LOG10(P-Value)')+
 #' theme_bw()+
@@ -510,7 +511,8 @@ teEnrichment<-function(inputGenes = NULL,
 #' inputGenes<-scan(genes,character())
 #' output<-teEnrichmentCustom(inputGenes,TSgenes)
 #' #Plotting the P-Values
-#' ggplot(output[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tissue.Specific.Genes,fill = Tissue))+
+#' ggplot(output[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,
+#' label = Tissue.Specific.Genes,fill = Tissue))+
 #' geom_bar(stat = 'identity')+
 #' labs(x='', y = '-LOG10(P-Value)')+
 #' theme_bw()+

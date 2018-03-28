@@ -3,11 +3,11 @@ data<-system.file("extdata", "test.expressiondata.txt", package = "TissueEnrich"
 expressionData<-read.table(data,header=TRUE,row.names=1,sep='\t')
 TSGenes<-teGeneRetrieval(expressionData)
 
-test_that("checking TS Genes Matrix from Gene reterival", {
+test_that("checking TS Genes Matrix from Gene retrieval", {
   expect_equal(ncol(TSGenes), 3)
 })
 
-test_that("checking number of genes in TS Genes Matrix from Gene reterival", {
+test_that("checking number of genes in TS Genes Matrix from Gene retrieval", {
   expect_equal(nrow(expressionData), length(unique(TSGenes$Gene)))
 })
 
