@@ -1,8 +1,6 @@
 import(ggplot2)
 import(dplyr)
 import(ensurer)
-importFrom(testthat, test_that)
-importFrom(testthat, expect_equal)
 importFrom(tidyr, gather)
 export(teEnrichment)
 export(teEnrichmentCustom)
