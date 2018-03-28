@@ -414,7 +414,7 @@ teEnrichment<-function(inputGenes = NULL,
     overlapGenes<-length(intersect(tissueGenes$Gene,inputEnsemblGenes))
     if(isHomolog || geneFormat == 2)
     {
-      ##Dirty code to convert ensembl Id to gene names
+      ##code to convert ensembl Id to gene names
       intGenes<- geneMappingForCurrentDataset %>% dplyr::filter(Gene %in% intersect(tissueGenes$Gene,inputEnsemblGenes))
       teExpressionData<-expressionDataLocal[as.character(intGenes$Gene),]
       genes<-as.factor(row.names(teExpressionData))
@@ -448,7 +448,7 @@ teEnrichment<-function(inputGenes = NULL,
       }
 
       #teExpressionData<-teExpressionData[,1:(ncol(teExpressionData)-2)]
-      ##Dirty code to convert ensembl Id for groups
+      ##code to convert ensembl Id for groups
       teInputGeneGroups<-tissueGenes %>% dplyr::filter(Gene %in% intGenes$Gene) %>% select(Gene,Group)
 
       ##Supress warnings due to different levels in factors
