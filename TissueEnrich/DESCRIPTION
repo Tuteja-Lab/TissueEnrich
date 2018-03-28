@@ -13,11 +13,14 @@ Description: TissueEnrich package is used to calculate the tissue-specific gene 
 License: MIT
 VignetteBuilder: knitr
 Depends:
-    R (>= 3.2),
+    R (>= 3.2)
+Imports:
     dplyr (>= 0.7.3),
     ensurer (>= 1.1),
     ggplot2 (>= 2.2.1),
     tidyr (>= 0.8.0)
+Suggests:
+    testthat (>=2.0.0)
 Suggests: knitr, rmarkdown , testthat
 Encoding: UTF-8
 LazyData: true
