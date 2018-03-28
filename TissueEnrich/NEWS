@@ -1,7 +1,5 @@
-FEATURES IN VERSION 1.00
+FEATURES IN VERSION 0.99.0
 -----------------------
-
-NEW FEATURES
 
     o Calculation of tissue-specific gene enrichment using human protein atlas, GTEx, and Mouse ENCODE dataset.
     o Calculation of tissue specific gene in one’s own dataset.
