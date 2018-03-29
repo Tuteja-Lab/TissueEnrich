@@ -2,9 +2,11 @@
 library(dplyr)
 library(ensurer)
 library(utils)
+library(SummarizedExperiment)
+
 
 ##To Supress Note
-utils::globalVariables(c("dataset",".", "%>%","Gene","Gene.name","Gene.stable.ID","Human.gene.name","Human.gene.stable.ID","Group","Tissue"))
+utils::globalVariables(c("dataset",".", "%>%","Gene","Gene.name","Gene.stable.ID","Human.gene.name","Human.gene.stable.ID","Group","Tissue","metadata"))
 
 #' Define tissue-specific genes by using the algorithm from the Human Protein Atlas
 #' @description The teGeneRetrieval function is used to define tissue-specific genes, using the algorithm
@@ -19,22 +21,29 @@ utils::globalVariables(c("dataset",".", "%>%","Gene","Gene.name","Gene.stable.ID
 #' @param maxNumberOfTissues A numeric Maximum number of tissues in a group for group enriched genes, default 7.
 #' @param expressedGeneThreshold A numeric Minimum gene expression cutoff for the gene to be called as expressed, default 1.
 #' @export
-#' @return A data frame object with three columns: Gene, Tissue, and Enrichment group of the gene in the given tissue.
+#' @return The output is a SummarizedExperiment object. The information about the tissue-specific genes
+#' is in the metadata list of the output object. The name of the item in the list is "TissueSpecificGenes".
+#' It will be a data frame object with three columns: Gene, Tissue, and Enrichment group of the gene in the
+#' given tissue.
 #' @examples
+#' library(SummarizedExperiment)
 #' data<-system.file("extdata", "test.expressiondata.txt", package = "TissueEnrich")
 #' expressionData<-read.table(data,header=TRUE,row.names=1,sep='\t')
-#' TSgenes<-teGeneRetrieval(expressionData)
-#' head(TSgenes)
+#' se<-SummarizedExperiment(assays = SimpleList(as.matrix(expressionData)),rowData =
+#' row.names(expressionData),colData = colnames(expressionData))
+#' output<-teGeneRetrieval(se)
+#' head(metadata(output)[["TissueSpecificGenes"]])
 
 
 teGeneRetrieval<-function(expressionData,foldChangeThreshold=5,maxNumberOfTissues=7,expressedGeneThreshold=1)
 {
   ###Add checks for the conditions
-  expressionData<-ensurer::ensure_that(expressionData, !is.null(.) && is.data.frame(.) && (nrow(.) > 0) && (ncol(.) > 1),err_desc = "expressionData should be a non-empty dataframe object with atleast 1 gene and 2 tissues. Rows are treated as genes and columns as tissues.")
+  expressionData<-ensurer::ensure_that(expressionData, !is.null(.) && class(.) == "SummarizedExperiment" && !is.null(assay(.)) && (nrow(assay(.)) > 0) && (ncol(assay(.)) > 1) && (ncol(rowData(.)) == 1) && (ncol(colData(.)) == 1),err_desc = "expressionData should be a non-empty SummarizedExperiment object with atleast 1 gene and 2 tissues.")
   foldChangeThreshold<-ensurer::ensure_that(foldChangeThreshold, !is.null(.) && is.numeric(.) && (. >=1),err_desc = "foldChangeThreshold should be a numeric value greater than or equal to 1.")
   maxNumberOfTissues<-ensurer::ensure_that(maxNumberOfTissues, !is.null(.) && is.numeric(.) && (. >=2),err_desc = "maxNumberOfTissues should be an integer value greater than or equal to 2.")
   expressedGeneThreshold<-ensurer::ensure_that(expressedGeneThreshold, !is.null(.) && is.numeric(.) && (. >=0),err_desc = "expressedGeneThreshold should be a numeric value greater than or equal to 0.")
 
+  SEExpressionData<-expressionData
   minNumberOfTissues<-2
   notExpressed<-data.frame()
   expressedInAll<-data.frame()
@@ -42,6 +51,9 @@ teGeneRetrieval<-function(expressionData,foldChangeThreshold=5,maxNumberOfTissue
   tissueEnriched<-data.frame()
   groupEnriched<-data.frame()
   tissueEnhanced<-data.frame()
+
+  ###Creating the expression dataframe object from summarized object.
+  expressionData<-setNames(data.frame(assay(expressionData),row.names = rowData(expressionData)[,1]),colData(expressionData)[,1])
   for(gene in row.names(expressionData))
   {
     tpm<-data.frame(t(as.matrix(expressionData[gene,])))
@@ -150,7 +162,11 @@ teGeneRetrieval<-function(expressionData,foldChangeThreshold=5,maxNumberOfTissue
       notExpressed<-rbind(notExpressed,df)
     }
   }
-  return(rbind(tissueEnriched,groupEnriched,tissueEnhanced,notExpressed,expressedInAll,mixedGenes))
+  TSGenes<-rbind(tissueEnriched,groupEnriched,tissueEnhanced,notExpressed,expressedInAll,mixedGenes)
+  metaData<-metadata(SEExpressionData)
+  metaData[["TissueSpecificGenes"]]<-TSGenes
+  metadata(SEExpressionData)<-metaData
+  return(SEExpressionData)
 }
 
 
@@ -492,26 +508,30 @@ teEnrichment<-function(inputGenes = NULL,
 #' enrichment using tissue-specific genes defined using the teGeneRetrieval function.
 #' @author Ashish Jain, Geetu Tuteja
 #' @param inputGenes A vector containing the input genes.
-#' @param tissueSpecificGenes A dataframe object. Output from `teGeneRetrieval` function. Default NULL.
+#' @param expressionData An SummarizedExperiment object. Output from `teGeneRetrieval` function. Default NULL.
 #' @param tissueSpecificGeneType An integer describing the type of tissue-specific genes to be used. 1 for "All" (default), 2 for "Tissue-Enriched",3 for "Tissue-Enhanced", and 4 for "Group-Enriched". Default 1.
 #' @param multiHypoCorrection Flag to correct P-values for multiple hypothesis using BH method. Default TRUE.
 #' @export
-#' @return The output is a list with three objects. The first object is the enrichment matrix, the second
-#' object  contains the expression values and tissue-specificity information of the tissue-specific genes
-#' for genes from the input gene set, and the third is a vector containing genes that were not identified
-#' in the tissue-specific gene data.
+#' @return The output is a SummarizedExperiment object. The information about the tissue-specific gene
+#' enrichment is in the metadata list of the output object. The name of the item in the list is
+#' "TissueSpecificGeneEnrichment". The item is a list with three objects. The first object is the enrichment
+#' matrix, the second object  contains the expression values and tissue-specificity information of the
+#' tissue-specific genes for genes from the input gene set, and the third is a vector containing genes
+#' that were not identified in the tissue-specific gene data.
 #' @examples
 #' library(dplyr)
-#' library(ggplot2)
 #' data<-system.file("extdata", "test.expressiondata.txt", package = "TissueEnrich")
 #' expressionData<-read.table(data,header=TRUE,row.names=1,sep='\t')
-#' TSgenes<-teGeneRetrieval(expressionData)
-#' head(TSgenes)
+#' se<-SummarizedExperiment(assays = SimpleList(as.matrix(expressionData)),rowData =
+#' row.names(expressionData),colData = colnames(expressionData))
+#' output<-teGeneRetrieval(se)
+#' head(metadata(output)[["TissueSpecificGenes"]])
 #' genes<-system.file("extdata", "inputGenesEnsembl.txt", package = "TissueEnrich")
 #' inputGenes<-scan(genes,character())
-#' output<-teEnrichmentCustom(inputGenes,TSgenes)
+#' output2<-teEnrichmentCustom(inputGenes,output)
 #' #Plotting the P-Values
-#' ggplot(output[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,
+#' enrichmentOutput<-metadata(output2)[["TissueSpecificGeneEnrichment"]]
+#' ggplot(enrichmentOutput[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,
 #' label = Tissue.Specific.Genes,fill = Tissue))+
 #' geom_bar(stat = 'identity')+
 #' labs(x='', y = '-LOG10(P-Value)')+
@@ -521,12 +541,14 @@ teEnrichment<-function(inputGenes = NULL,
 #' theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),
 #' panel.grid.major= element_blank(),panel.grid.minor = element_blank())
 
-teEnrichmentCustom<-function(inputGenes=NULL,tissueSpecificGenes=NULL,
+teEnrichmentCustom<-function(inputGenes=NULL,expressionData=NULL,
                                              tissueSpecificGeneType= 1,multiHypoCorrection = TRUE)
 {
   ###Add checks for the conditions
   inputGenes<-ensurer::ensure_that(inputGenes, !is.null(.) && is.vector(.) && !is.null(.),err_desc = "Please enter correct inputGenes. It should be a character vector")
   ##Check for dataset class, rows and should not be NULL
+  expressionData<-ensurer::ensure_that(expressionData, !is.null(.) && class(.) == "SummarizedExperiment" && !is.null(assay(.)) && (nrow(assay(.)) > 0) && (ncol(assay(.)) > 1) && (ncol(rowData(.)) == 1) && (ncol(colData(.)) == 1),err_desc = "expressionData should be a non-empty SummarizedExperiment object with atleast 1 gene and 2 tissues.")
+  tissueSpecificGenes<-metadata(expressionData)[["TissueSpecificGenes"]]
   tissueSpecificGenes<-ensurer::ensure_that(tissueSpecificGenes,!is.null(.) && is.data.frame(.) && !is.null(.) && (nrow(.) > 0) && (ncol(.) == 3),err_desc = "Please enter correct tissueSpecificGenes. It should be a non-empty dataframe object.")
   tissueSpecificGeneType<-ensurer::ensure_that(tissueSpecificGeneType,!is.null(.) && is.numeric(.)  && . <=4 || . >=1 ,err_desc = "Please enter correct tissueSpecificGeneType. It should be 1 for All, 2 for Tissue-Enriched,3 for Tissue-Enhanced, and 4 for Group-Enriched")
   multiHypoCorrection<-ensurer::ensure_that(multiHypoCorrection,!is.null(.) && is.logical(.),err_desc = "Please enter correct multiHypoCorrection. It should be either TRUE or FALSE")
@@ -580,5 +602,8 @@ teEnrichmentCustom<-function(inputGenes=NULL,tissueSpecificGenes=NULL,
   pValueList<-(-log10(pValueList))
   output<-data.frame(Tissue=tissueNames,Log10PValue=pValueList,Tissue.Specific.Genes=overlapGenesList)
   output<-output[with(output, order(-Log10PValue)), ]
-  return(list(output,overlapTissueGenesList,genesNotFound))
+  metaData<-metadata(expressionData)
+  metaData[["TissueSpecificGeneEnrichment"]]<-list(output,overlapTissueGenesList,genesNotFound)
+  metadata(expressionData)<-metaData
+  return(expressionData)
 }

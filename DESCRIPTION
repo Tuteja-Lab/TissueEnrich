@@ -11,14 +11,16 @@ Description: The TissueEnrich package is used to calculate enrichment of tissue-
 License: MIT + file LICENSE
 VignetteBuilder: knitr
 Depends:
-    R (>= 3.5.),
+    R (>= 3.5),
     dplyr (>= 0.7.3),
     ensurer (>= 1.1.0),
-    ggplot2 (>= 2.2.1)
+    ggplot2 (>= 2.2.1),
+    SummarizedExperiment (>= 1.6.5)
 Imports:
-    tidyr (>= 0.8.0)
+    tidyr (>= 0.8.0),
+    stats
 Suggests: knitr, rmarkdown , testthat
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.0.1
-biocViews: GeneSetEnrichment, GeneExpression, ComparativeGenomics, Sequencing
+biocViews: GeneSetEnrichment

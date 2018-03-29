@@ -1,7 +1,9 @@
 
 data<-system.file("extdata", "test.expressiondata.txt", package = "TissueEnrich")
 expressionData<-read.table(data,header=TRUE,row.names=1,sep='\t')
-TSGenes<-teGeneRetrieval(expressionData)
+se<-SummarizedExperiment(assays = SimpleList(as.matrix(expressionData)),rowData = row.names(expressionData),colData = colnames(expressionData))
+output<-teGeneRetrieval(se)
+TSGenes<-metadata(output)[["TissueSpecificGenes"]]
 
 test_that("checking TS Genes Matrix from Gene retrieval", {
   expect_equal(ncol(TSGenes), 3)

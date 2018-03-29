@@ -17,7 +17,10 @@ teGeneRetrieval(expressionData, foldChangeThreshold = 5,
 \item{expressedGeneThreshold}{A numeric Minimum gene expression cutoff for the gene to be called as expressed, default 1.}
 }
 \value{
-A data frame object with three columns: Gene, Tissue, and Enrichment group of the gene in the given tissue.
+The output is a SummarizedExperiment object. The information about the tissue-specific genes
+is in the metadata list of the output object. The name of the item in the list is "TissueSpecificGenes".
+It will be a data frame object with three columns: Gene, Tissue, and Enrichment group of the gene in the
+given tissue.
 }
 \description{
 The teGeneRetrieval function is used to define tissue-specific genes, using the algorithm
@@ -28,10 +31,13 @@ about the gene groups and HPA thresholds are provided below. More details about 
 provided in the vignette.
 }
 \examples{
+library(SummarizedExperiment)
 data<-system.file("extdata", "test.expressiondata.txt", package = "TissueEnrich")
 expressionData<-read.table(data,header=TRUE,row.names=1,sep='\\t')
-TSgenes<-teGeneRetrieval(expressionData)
-head(TSgenes)
+se<-SummarizedExperiment(assays = SimpleList(as.matrix(expressionData)),rowData =
+row.names(expressionData),colData = colnames(expressionData))
+output<-teGeneRetrieval(se)
+head(metadata(output)[["TissueSpecificGenes"]])
 }
 \author{
 Ashish Jain, Geetu Tuteja

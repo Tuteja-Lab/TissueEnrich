@@ -181,7 +181,7 @@ This result shows that human TE-specific genes also show enrichment for mouse pl
 
 # `teGeneRetrieval`: Identification of tissue-specific genes
 
-The `teGeneRetrieval` function is used to define tissue-specific genes, using the algorithm from the HPA [@HPA2015]. It takes a gene expression matrix as input (rows as genes and columns as tissue) and classifies the genes into different gene groups. The users also have the option of changing the default thresholds to vary the degree of tissue specificity of genes. More details about the gene groups and HPA thresholds are provided below.
+The `teGeneRetrieval` function is used to define tissue-specific genes, using the algorithm from the HPA [@HPA2015]. It takes an SummarizedExperiment object containing expression information as input (rowData as genes and colData as tissue) and classifies the genes into different gene groups and stores into its metadata. The users also have the option of changing the default thresholds to vary the degree of tissue specificity of genes. More details about the gene groups and HPA thresholds are provided below.
 
 ## Gene groups
 The genes are divided into six groups based on their gene expression across the tissues. These groups are:
@@ -200,13 +200,15 @@ In the example below, we supplied a subset of mouse ENCODE data, consisting of e
 
 ```{r eval=TRUE}
 library(TissueEnrich)
+library(SummarizedExperiment)
 data<-system.file("extdata", "test.expressiondata.txt", package = "TissueEnrich")
 expressionData<-read.table(data,header=TRUE,row.names=1,sep='\t')
-TSgenes<-teGeneRetrieval(expressionData)
-head(TSgenes)
+se<-SummarizedExperiment(assays = SimpleList(as.matrix(expressionData)),rowData = row.names(expressionData),colData = colnames(expressionData))
+output<-teGeneRetrieval(se)
+head(metadata(output)[["TissueSpecificGenes"]])
 ```
 
-As seen above, the output is a data frame with columns for Gene name, Tissue name, and Tissue-Specific group.
+As seen above, the metadata of the output consists of the tissue-specific genes information in a data frame with columns for Gene name, Tissue name, and Tissue-Specific group.
 
 # `teEnrichmentCustom`: Tissue-specific gene enrichment in custom expression datasets
 
@@ -220,8 +222,9 @@ library(TissueEnrich)
 library(ggplot2)
 genes<-system.file("extdata", "inputGenesEnsembl.txt", package = "TissueEnrich")
 inputGenes<-scan(genes,character())
-output<-teEnrichmentCustom(inputGenes,TSgenes)
-ggplot(output[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tissue.Specific.Genes,fill = Tissue))+
+output2<-teEnrichmentCustom(inputGenes,output)
+enrichmentOutput<-metadata(output2)[["TissueSpecificGeneEnrichment"]]
+ggplot(enrichmentOutput[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tissue.Specific.Genes,fill = Tissue))+
       geom_bar(stat = 'identity')+
       labs(x='', y = '-LOG10(P-Value)')+
       theme_bw()+
@@ -229,6 +232,8 @@ ggplot(output[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tiss
       theme(plot.title = element_text(hjust = 0.5,size = 20),axis.title = element_text(size=15))+
       theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),panel.grid.major= element_blank(),panel.grid.minor = element_blank())
 ```
+
+As seen above, the metadata of the output consists of the tissue-specific gene enrichment information in a list object containing the enrichment results.
 
 # References
 
