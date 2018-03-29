@@ -8,9 +8,9 @@ teEnrichmentCustom(inputGenes = NULL, expressionData = NULL,
   tissueSpecificGeneType = 1, multiHypoCorrection = TRUE)
 }
 \arguments{
-\item{inputGenes}{A vector containing the input genes.}
+\item{inputGenes}{An GeneSet object containing the input genes.}
 
-\item{expressionData}{An SummarizedExperiment object. Output from `teGeneRetrieval` function. Default NULL.}
+\item{expressionData}{A SummarizedExperiment object. Output from `teGeneRetrieval` function. Default NULL.}
 
 \item{tissueSpecificGeneType}{An integer describing the type of tissue-specific genes to be used. 1 for "All" (default), 2 for "Tissue-Enriched",3 for "Tissue-Enhanced", and 4 for "Group-Enriched". Default 1.}
 
@@ -38,7 +38,8 @@ output<-teGeneRetrieval(se)
 head(metadata(output)[["TissueSpecificGenes"]])
 genes<-system.file("extdata", "inputGenesEnsembl.txt", package = "TissueEnrich")
 inputGenes<-scan(genes,character())
-output2<-teEnrichmentCustom(inputGenes,output)
+gs<-GeneSet(geneIds=inputGenes)
+output2<-teEnrichmentCustom(gs,output)
 #Plotting the P-Values
 enrichmentOutput<-metadata(output2)[["TissueSpecificGeneEnrichment"]]
 ggplot(enrichmentOutput[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,

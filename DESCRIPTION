@@ -11,11 +11,12 @@ Description: The TissueEnrich package is used to calculate enrichment of tissue-
 License: MIT + file LICENSE
 VignetteBuilder: knitr
 Depends:
-    R (>= 3.5),
+    R (>= 3.4),
     dplyr (>= 0.7.3),
     ensurer (>= 1.1.0),
     ggplot2 (>= 2.2.1),
-    SummarizedExperiment (>= 1.6.5)
+    SummarizedExperiment (>= 1.6.5),
+    GSEABase (>= 1.38.2)
 Imports:
     tidyr (>= 0.8.0),
     stats

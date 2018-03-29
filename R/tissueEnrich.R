@@ -3,6 +3,7 @@ library(dplyr)
 library(ensurer)
 library(utils)
 library(SummarizedExperiment)
+library(GSEABase)
 
 
 ##To Supress Note
@@ -183,26 +184,28 @@ teGeneRetrieval<-function(expressionData,foldChangeThreshold=5,maxNumberOfTissue
 #' given an input gene set. It uses tissue-specific genes defined by processing RNA-Seq datasets
 #' from human and mouse.
 #' @author Ashish Jain, Geetu Tuteja
-#' @param inputGenes A vector containing the input genes.
+#' @param inputGenes A GeneSet object containing the input genes, organism type ("Homo Sapiens" or "Mus Musculus"), and gene id identifier (Gene Symbol or ENSEMBL identifier).
 #' @param rnaSeqDataset An integer describing the dataset to be used for enrichment analysis. 1 for "Human Protein Atlas" (default), 2 for "GTEx", 3 for "Mouse ENCODE". Default 1.
-#' @param organism An integer describing the organism the input gene set is from. 1 for "Homo Sapiens" (default), 2 for "Mus Musculus". Default 1.
 #' @param tissueSpecificGeneType An integer describing the type of tissue-specific genes to be used.
 #' 1 for "All" (default), 2 for "Tissue-Enriched", 3 for "Tissue-Enhanced", and 4 for "Group-Enriched". Default 1.
 #' @param multiHypoCorrection Flag to correct P-values for multiple hypothesis using BH method. Default TRUE.
-#' @param geneFormat An integer describing the type of input gene list. 1 for "EnsemblId" (default), 2 for "Gene Symbol". Default 1.
 #' @export
-#' @return The output is a list with three objects. The first object is the enrichment matrix,
-#' the second object  contains the expression values and tissue-specificity information of the
-#' tissue-specific genes for genes from the input gene set, and the third is a vector containing
-#' genes that were not identified in the tissue-specific gene data.
+#' @return The output is a SummarizedExperiment object. The information about the tissue-specific gene
+#' enrichment is in the metadata list of the output object. The name of the item in the list is
+#' "TissueSpecificGeneEnrichment". The item is a list with three objects. The first object is the enrichment
+#' matrix, the second object  contains the expression values and tissue-specificity information of the
+#' tissue-specific genes for genes from the input gene set, and the third is a vector containing genes
+#' that were not identified in the tissue-specific gene data.
 #' @examples
 #' library(dplyr)
 #' library(ggplot2)
 #' genes<-system.file("extdata", "inputGenes.txt", package = "TissueEnrich")
 #' inputGenes<-scan(genes,character())
-#' output<-teEnrichment(inputGenes,geneFormat=2)
+#' gs<-GeneSet(geneIds=inputGenes,organism="Homo Sapiens",geneIdType=SymbolIdentifier())
+#' output<-teEnrichment(gs)
+#' enrichmentOutput<-metadata(output)[["TissueSpecificGeneEnrichment"]]
 #' #Plotting the P-Values
-#' ggplot(output[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,
+#' ggplot(enrichmentOutput[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,
 #' label = Tissue.Specific.Genes,fill = Tissue))+
 #' geom_bar(stat = 'identity')+
 #' labs(x='', y = '-LOG10(P-Value)')+
@@ -215,14 +218,14 @@ teGeneRetrieval<-function(expressionData,foldChangeThreshold=5,maxNumberOfTissue
 
 teEnrichment<-function(inputGenes = NULL,
                                        rnaSeqDataset=1,#c("Human Protein Atlas","GTEx combine","GTEx sub-tissue","Mouse ENCODE"),
-                                       organism=1,tissueSpecificGeneType=1,multiHypoCorrection=TRUE,
-                                       geneFormat=1)
+                                       tissueSpecificGeneType=1,multiHypoCorrection=TRUE)
 {
   ###Add checks for the conditions
-  inputGenes<-ensurer::ensure_that(inputGenes, !is.null(.) && is.vector(.),err_desc = "Please enter correct inputGenes. It should be a character vector")
+  #inputGenes<-ensurer::ensure_that(inputGenes, !is.null(.) && is.vector(.),err_desc = "Please enter correct inputGenes. It should be a character vector")
+  inputGenes<-ensurer::ensure_that(inputGenes, !is.null(.) && (class(.) == "GeneSet") && !is.null(geneIds(.)),err_desc = "Please enter correct inputGenes. It should be a Gene set object.")
   rnaSeqDataset<-ensurer::ensure_that(rnaSeqDataset, !is.null(.) && is.numeric(.) && . <=3 || . >=1,err_desc = "Please enter correct rnaSeqDataset. It should be 1 for Human Protein Atlas, 2 for GTEx combine, 3 for GTEx sub-tissue, 4 for Mouse ENCODE.")
-  organism<-ensurer::ensure_that(organism, !is.null(.) && is.numeric(.) && . <=2 || . >=1,err_desc = "Please enter correct organism. It should be either 1 for Homo Sapiens, 2 for Mus Musculus.")
-  geneFormat<-ensurer::ensure_that(geneFormat,!is.null(.) && is.numeric(.) && . <=2 || . >=1,err_desc = "Please enter correct geneFormat. It should be either 1 for EnsemblId, 2 for Gene Symbol.")
+  #organism<-ensurer::ensure_that(organism, !is.null(.) && is.numeric(.) && . <=2 || . >=1,err_desc = "Please enter correct organism. It should be either 1 for Homo Sapiens, 2 for Mus Musculus.")
+  #geneFormat<-ensurer::ensure_that(geneFormat,!is.null(.) && is.numeric(.) && . <=2 || . >=1,err_desc = "Please enter correct geneFormat. It should be either 1 for EnsemblId, 2 for Gene Symbol.")
   tissueSpecificGeneType<-ensurer::ensure_that(tissueSpecificGeneType,!is.null(.) && is.numeric(.)  && . <=4 || . >=1,err_desc = "Please enter correct tissueSpecificGeneType. It should be 1 for All, 2 for Tissue-Enriched,3 for Tissue-Enhanced, and 4 for Group-Enriched")
   #isHomolog<-ensurer::ensure_that(isHomolog,!is.null(.) && is.logical(.) ,err_desc = "Please enter correct isHomolog. It should be either TRUE or FALSE")
   multiHypoCorrection<-ensurer::ensure_that(multiHypoCorrection,!is.null(.) && is.logical(.) ,err_desc = "Please enter correct multiHypoCorrection. It should be either TRUE or FALSE")
@@ -231,6 +234,8 @@ teEnrichment<-function(inputGenes = NULL,
   # withCallingHandlers(warning("Column `Gene` joining factors with different levels, coercing to character vector"), warning = function(w) {
   #   print("No")
   # })
+  geInputGenes<-inputGenes
+  inputGenes<-geneIds(inputGenes)
   ##Load gene mapping and orthologs Data
   isHomolog<-FALSE
   e <- new.env()
@@ -258,15 +263,17 @@ teEnrichment<-function(inputGenes = NULL,
 
 
   ##Check for organism and homolog to update geneMapping Variable
-  if(organism == 1)#"Homo Sapiens")
+  if(organism(geInputGenes) == "Homo Sapiens")#"Homo Sapiens")
   {
+    organism <-1
     geneMapping<-e$dataset$humanGeneMapping
     if(rnaSeqDataset == 3)
     {
       isHomolog<-TRUE
     }
-  }else if(organism == 2)#"Mus Musculus")
+  }else if(organism(geInputGenes) == "Mus Musculus")#"Mus Musculus")
   {
+    organism <-2
     geneMapping<-e$dataset$mouseGeneMapping
     if(rnaSeqDataset == 1 || rnaSeqDataset == 2)
     {
@@ -302,9 +309,14 @@ teEnrichment<-function(inputGenes = NULL,
     #print("Something is wrong!")
   }
 
-  if(geneFormat != 2 && geneFormat != 1)
+  if(geneIdType(geneIdType(geInputGenes)) == geneIdType(SymbolIdentifier()))
   {
-    stop(paste0("Gene format is not correct."),call. = FALSE)
+    geneFormat<-2
+  }else if(geneIdType(geneIdType(geInputGenes)) == geneIdType(ENSEMBLIdentifier()))
+  {
+    geneFormat<-1
+  }else{
+    stop(paste0("Gene Id type is not correct."),call. = FALSE)
   }
 
   inputGenes<-toupper(inputGenes)
@@ -498,7 +510,7 @@ teEnrichment<-function(inputGenes = NULL,
   output<-data.frame(Tissue=tissueDetails$TissueName,Log10PValue=pValueList,Tissue.Specific.Genes=overlapGenesList)
   output<-output[with(output, order(-Log10PValue)), ]
   #colnames(output)<-c("Tissue","-Log10PValue","Tissue-Specific-Genes")
-  return(list(output,overlapTissueGenesList,genesNotFound))
+  return(SummarizedExperiment(metadata=list("TissueSpecificGeneEnrichment"=list(output,overlapTissueGenesList,genesNotFound),"InputGenes"=geInputGenes)))
 }
 
 
@@ -507,8 +519,8 @@ teEnrichment<-function(inputGenes = NULL,
 #' @description The teEnrichmentCustom function is used to calculate tissue-specific gene
 #' enrichment using tissue-specific genes defined using the teGeneRetrieval function.
 #' @author Ashish Jain, Geetu Tuteja
-#' @param inputGenes A vector containing the input genes.
-#' @param expressionData An SummarizedExperiment object. Output from `teGeneRetrieval` function. Default NULL.
+#' @param inputGenes An GeneSet object containing the input genes.
+#' @param expressionData A SummarizedExperiment object. Output from `teGeneRetrieval` function. Default NULL.
 #' @param tissueSpecificGeneType An integer describing the type of tissue-specific genes to be used. 1 for "All" (default), 2 for "Tissue-Enriched",3 for "Tissue-Enhanced", and 4 for "Group-Enriched". Default 1.
 #' @param multiHypoCorrection Flag to correct P-values for multiple hypothesis using BH method. Default TRUE.
 #' @export
@@ -528,7 +540,8 @@ teEnrichment<-function(inputGenes = NULL,
 #' head(metadata(output)[["TissueSpecificGenes"]])
 #' genes<-system.file("extdata", "inputGenesEnsembl.txt", package = "TissueEnrich")
 #' inputGenes<-scan(genes,character())
-#' output2<-teEnrichmentCustom(inputGenes,output)
+#' gs<-GeneSet(geneIds=inputGenes)
+#' output2<-teEnrichmentCustom(gs,output)
 #' #Plotting the P-Values
 #' enrichmentOutput<-metadata(output2)[["TissueSpecificGeneEnrichment"]]
 #' ggplot(enrichmentOutput[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,
@@ -545,7 +558,7 @@ teEnrichmentCustom<-function(inputGenes=NULL,expressionData=NULL,
                                              tissueSpecificGeneType= 1,multiHypoCorrection = TRUE)
 {
   ###Add checks for the conditions
-  inputGenes<-ensurer::ensure_that(inputGenes, !is.null(.) && is.vector(.) && !is.null(.),err_desc = "Please enter correct inputGenes. It should be a character vector")
+  inputGenes<-ensurer::ensure_that(inputGenes, !is.null(.) && (class(.) == "GeneSet") && !is.null(geneIds(.)),err_desc = "Please enter correct inputGenes. It should be a Gene set object.")
   ##Check for dataset class, rows and should not be NULL
   expressionData<-ensurer::ensure_that(expressionData, !is.null(.) && class(.) == "SummarizedExperiment" && !is.null(assay(.)) && (nrow(assay(.)) > 0) && (ncol(assay(.)) > 1) && (ncol(rowData(.)) == 1) && (ncol(colData(.)) == 1),err_desc = "expressionData should be a non-empty SummarizedExperiment object with atleast 1 gene and 2 tissues.")
   tissueSpecificGenes<-metadata(expressionData)[["TissueSpecificGenes"]]
@@ -571,6 +584,8 @@ teEnrichmentCustom<-function(inputGenes=NULL,expressionData=NULL,
     #print("Something is wrong!")
   }
 
+  geInputGenes<-inputGenes
+  inputGenes<-geneIds(inputGenes)
   inputGenes<-unique(inputGenes)
   totalGenes<-as.character(unique(tissueSpecificGenes$Gene))
   genesNotFound<-c()
@@ -604,6 +619,7 @@ teEnrichmentCustom<-function(inputGenes=NULL,expressionData=NULL,
   output<-output[with(output, order(-Log10PValue)), ]
   metaData<-metadata(expressionData)
   metaData[["TissueSpecificGeneEnrichment"]]<-list(output,overlapTissueGenesList,genesNotFound)
+  metaData[["InputGenes"]]<-geInputGenes
   metadata(expressionData)<-metaData
   return(expressionData)
 }

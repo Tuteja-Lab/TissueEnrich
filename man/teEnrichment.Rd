@@ -4,28 +4,26 @@
 \alias{teEnrichment}
 \title{Calculate tissue-specific gene enrichment using the hypergeometric test}
 \usage{
-teEnrichment(inputGenes = NULL, rnaSeqDataset = 1, organism = 1,
-  tissueSpecificGeneType = 1, multiHypoCorrection = TRUE, geneFormat = 1)
+teEnrichment(inputGenes = NULL, rnaSeqDataset = 1,
+  tissueSpecificGeneType = 1, multiHypoCorrection = TRUE)
 }
 \arguments{
-\item{inputGenes}{A vector containing the input genes.}
+\item{inputGenes}{A GeneSet object containing the input genes, organism type ("Homo Sapiens" or "Mus Musculus"), and gene id identifier (Gene Symbol or ENSEMBL identifier).}
 
 \item{rnaSeqDataset}{An integer describing the dataset to be used for enrichment analysis. 1 for "Human Protein Atlas" (default), 2 for "GTEx", 3 for "Mouse ENCODE". Default 1.}
-
-\item{organism}{An integer describing the organism the input gene set is from. 1 for "Homo Sapiens" (default), 2 for "Mus Musculus". Default 1.}
 
 \item{tissueSpecificGeneType}{An integer describing the type of tissue-specific genes to be used.
 1 for "All" (default), 2 for "Tissue-Enriched", 3 for "Tissue-Enhanced", and 4 for "Group-Enriched". Default 1.}
 
 \item{multiHypoCorrection}{Flag to correct P-values for multiple hypothesis using BH method. Default TRUE.}
-
-\item{geneFormat}{An integer describing the type of input gene list. 1 for "EnsemblId" (default), 2 for "Gene Symbol". Default 1.}
 }
 \value{
-The output is a list with three objects. The first object is the enrichment matrix,
-the second object  contains the expression values and tissue-specificity information of the
-tissue-specific genes for genes from the input gene set, and the third is a vector containing
-genes that were not identified in the tissue-specific gene data.
+The output is a SummarizedExperiment object. The information about the tissue-specific gene
+enrichment is in the metadata list of the output object. The name of the item in the list is
+"TissueSpecificGeneEnrichment". The item is a list with three objects. The first object is the enrichment
+matrix, the second object  contains the expression values and tissue-specificity information of the
+tissue-specific genes for genes from the input gene set, and the third is a vector containing genes
+that were not identified in the tissue-specific gene data.
 }
 \description{
 The teEnrichment function is used to calculate the enrichment of tissue-specific genes,
@@ -37,9 +35,11 @@ library(dplyr)
 library(ggplot2)
 genes<-system.file("extdata", "inputGenes.txt", package = "TissueEnrich")
 inputGenes<-scan(genes,character())
-output<-teEnrichment(inputGenes,geneFormat=2)
+gs<-GeneSet(geneIds=inputGenes,organism="Homo Sapiens",geneIdType=SymbolIdentifier())
+output<-teEnrichment(gs)
+enrichmentOutput<-metadata(output)[["TissueSpecificGeneEnrichment"]]
 #Plotting the P-Values
-ggplot(output[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,
+ggplot(enrichmentOutput[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,
 label = Tissue.Specific.Genes,fill = Tissue))+
 geom_bar(stat = 'identity')+
 labs(x='', y = '-LOG10(P-Value)')+

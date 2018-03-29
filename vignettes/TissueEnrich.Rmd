@@ -94,19 +94,21 @@ library(TissueEnrich)
 library(dplyr)
 genes<-system.file("extdata", "inputGenes.txt", package = "TissueEnrich")
 inputGenes<-scan(genes,character())
-output<-teEnrichment(inputGenes = inputGenes,geneFormat=2)
+gs<-GeneSet(geneIds=inputGenes,organism="Homo Sapiens",geneIdType=SymbolIdentifier())
+output<-teEnrichment(inputGenes = gs)
+enrichmentOutput<-metadata(output)[["TissueSpecificGeneEnrichment"]]
 ```
 
-The `output` is a list object containing the enrichment results. These results are explained in the next section.
+The `enrichmentOutput` is a list object containing the enrichment results. These results are explained in the next section.
 
 ### Exploring tissue-specific gene enrichment results
 
 #### Tissue-specific gene enrichment histogram using `ggplot2`
-The first object in the `output` list is a dataframe containing the $-Log_{10}(P-Value)$, corresponding to the tissue-specific gene enrichment, along with the number of tissue-specific genes in the input gene set. This dataframe object can be used to visualize tissue-specific gene enrichment in the form of a histogram.
+The first object in the `enrichmentOutput` list is a dataframe containing the $-Log_{10}(P-Value)$, corresponding to the tissue-specific gene enrichment, along with the number of tissue-specific genes in the input gene set. This dataframe object can be used to visualize tissue-specific gene enrichment in the form of a histogram.
 
 ```{r eval=TRUE}
 library(ggplot2)
-ggplot(output[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tissue.Specific.Genes,fill = Tissue))+
+ggplot(enrichmentOutput[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tissue.Specific.Genes,fill = Tissue))+
       geom_bar(stat = 'identity')+
       labs(x='', y = '-LOG10(P-Value)')+
       theme_bw()+
@@ -118,14 +120,14 @@ ggplot(output[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tiss
 In the plot above, the x-axis shows each of the tissues, and the y-axis represents the tissue-specific gene enrichment ($-Log_{10}(P-Value)$) values. As expected, the 100 TE-specific genes show enrichment for placenta specific genes.
 
 #### Heatmap to show expression profiles of tissue-specific genes using `ggplot2`
-The second object in the `output` is a list containing the tissue-specific genes (with expression and tissue-specificity information) for genes from the input gene set. 
+The second object in the `enrichmentOutput` is a list containing the tissue-specific genes (with expression and tissue-specificity information) for genes from the input gene set. 
 
 The first item in this list has expression values of the tissue-specific genes identified from the input gene set. The expression values can be visualized in the form of a heatmap. For example, the code below generates a heatmap showing the expression of the placenta specific genes across all the tissues.
 
 ```{r eval=TRUE}
 library(tidyr)
 library(ggplot2)
-exp<-output[[2]][["Placenta"]][[1]]
+exp<-enrichmentOutput[[2]][["Placenta"]][[1]]
 exp$Gene<-row.names(exp)
 exp<-exp %>% gather(Tissue=1:(ncol(exp)-1))
 
@@ -142,18 +144,18 @@ ggplot(exp, aes(key, Gene)) + geom_tile(aes(fill = value),
 ```
 
 #### Retrieval of input tissue-specific genes
-The second item in the second object of the `output` list has tissue-specificity information for the input genes. The code below retrieves the tissue-specific genes along with the type of tissue-specificity in placenta tissue.
+The second item in the second object of the `enrichmentOutput` list has tissue-specificity information for the input genes. The code below retrieves the tissue-specific genes along with the type of tissue-specificity in placenta tissue.
 
 ```{r eval=TRUE}
-groupInf<-output[[2]][["Placenta"]][[2]]
+groupInf<-enrichmentOutput[[2]][["Placenta"]][[2]]
 print(head(groupInf))
 ```
 
 
 #### Retrieval of tissue-specific genes that could not be mapped
-The third object in the `output` list is a character vector that has a list of input genes that were not identified in the tissue-specific gene data.
+The third object in the `enrichmentOutput` list is a character vector that has a list of input genes that were not identified in the tissue-specific gene data.
 ```{r eval=TRUE}
-print(output[[3]])
+print(enrichmentOutput[[3]])
 ```
 
 ## Orthologous gene enrichment
@@ -167,8 +169,10 @@ library(TissueEnrich)
 library(ggplot2)
 genes<-system.file("extdata", "inputGenes.txt", package = "TissueEnrich")
 inputGenes<-scan(genes,character())
-output<-teEnrichment(inputGenes = inputGenes,rnaSeqDataset = 3, organism = 1, geneFormat=2)
-ggplot(output[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tissue.Specific.Genes,fill = Tissue))+
+gs<-GeneSet(geneIds=inputGenes,organism="Homo Sapiens",geneIdType=SymbolIdentifier())
+output<-teEnrichment(inputGenes = gs,rnaSeqDataset = 3)
+enrichmentOutput<-metadata(output)[["TissueSpecificGeneEnrichment"]]
+ggplot(enrichmentOutput[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tissue.Specific.Genes,fill = Tissue))+
       geom_bar(stat = 'identity')+
       labs(x='', y = '-LOG10(P-Value)')+
       theme_bw()+
@@ -217,12 +221,13 @@ The `teEnrichmentCustom` function is used to calculate tissue-specific gene enri
 ## Example: Tissue-specific gene enrichment in custom dataset
 The example uses 10 genes, randomly selected from the 36 genes used in the **Tissue-specific gene retrieval** example. The tissue-specific genes identified from the custom gene expression are used to calculate tissue-specific gene enrichment in the input gene set.
 
-```{r eval=FALSE}
+```{r eval=TRUE}
 library(TissueEnrich)
 library(ggplot2)
 genes<-system.file("extdata", "inputGenesEnsembl.txt", package = "TissueEnrich")
 inputGenes<-scan(genes,character())
-output2<-teEnrichmentCustom(inputGenes,output)
+gs<-GeneSet(geneIds=inputGenes)
+output2<-teEnrichmentCustom(gs,output)
 enrichmentOutput<-metadata(output2)[["TissueSpecificGeneEnrichment"]]
 ggplot(enrichmentOutput[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tissue.Specific.Genes,fill = Tissue))+
       geom_bar(stat = 'identity')+

@@ -15,18 +15,20 @@ test_that("checking number of genes in TS Genes Matrix from Gene retrieval", {
 
 genes<-system.file("extdata", "inputGenes.txt", package = "TissueEnrich")
 inputGenes<-scan(genes,character())
-output<-teEnrichment(inputGenes = inputGenes,geneFormat=2)
+gs<-GeneSet(geneIds=inputGenes,organism="Homo Sapiens",geneIdType=SymbolIdentifier())
+output<-teEnrichment(inputGenes = gs)
+TSGEOutput<-metadata(output)[["TissueSpecificGeneEnrichment"]]
 
 test_that("check the length of the output from teGeneEnrichment", {
-  expect_equal(length(output), 3)
+  expect_equal(length(TSGEOutput), 3)
 })
 
 test_that("check number of columns of the enrichment matrix", {
-  expect_equal(ncol(output[[1]]), 3)
+  expect_equal(ncol(TSGEOutput[[1]]), 3)
 })
 
 test_that("check number of tissues in the enrichment matrix using Human protein atlas output", {
-  expect_equal(nrow(output[[1]]), 35)
+  expect_equal(nrow(TSGEOutput[[1]]), 35)
 })
 
 
