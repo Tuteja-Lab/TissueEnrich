@@ -1,7 +1,7 @@
 Package: TissueEnrich
 Type: Package
 Title: TissueEnrich
-Version: 0.99.0
+Version: 0.99.1
 Authors@R: c(person("Ashish Jain", "Package Creator and Maintainer",
         email="jain@iastate.edu",
         role=c("aut", "cre")), person("Geetu Tuteja", "Package Maintainer",
@@ -11,7 +11,7 @@ Description: The TissueEnrich package is used to calculate enrichment of tissue-
 License: MIT + file LICENSE
 VignetteBuilder: knitr
 Depends:
-    R (>= 3.2.1),
+    R (>= 3.5.),
     dplyr (>= 0.7.3),
     ensurer (>= 1.1.0),
     ggplot2 (>= 2.2.1)
