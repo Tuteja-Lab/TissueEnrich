@@ -98,12 +98,12 @@ teGeneRetrieval<-function(expressionData,foldChangeThreshold=5,
 
               for(i in 2:(nrow(groupTPM)))
               {
-                meanTPMForGroup<-mean(groupTPM[seq_along(seq_along(1:i)),])
+                meanTPMForGroup<-mean(groupTPM[seq(1,i),])
                 highestTPMOutsideGroup<-tpm[i+1,]
                 if((meanTPMForGroup/highestTPMOutsideGroup) >= foldChangeThreshold)
                 {
                   ##To put this genes as group enriched for only the tissues which satisfy the threhold or all the tissues??
-                  for(j in seq_along(seq_along(1:i)))
+                  for(j in seq(1,i))
                   {
                     df<-cbind(Gene=gene,Tissue=row.names(tpm)[j],Group="Group-Enriched")
                     groupEnriched<-rbind(groupEnriched,df)
@@ -474,14 +474,14 @@ teEnrichment<-function(inputGenes = NULL,
         #####Code to take the mean of the genes with multiple ensembl Ids.
         res <- as.data.frame( # sapply returns a list here, so we convert it to a data.frame
           t(sapply(unique(teExpressionData$Gene.name), # for each unique column name
-                   FUN=function(col) colMeans(teExpressionData[teExpressionData$Gene.name == col,c(seq_along(1:(ncol(teExpressionData)-2)))]) # calculate row means
+                   FUN=function(col) colMeans(teExpressionData[teExpressionData$Gene.name == col,c(seq(1,(ncol(teExpressionData)-2)))]) # calculate row means
           )
           )
         )
         teExpressionData<-res
       }else
       {
-        teExpressionData<-teExpressionData[,seq_along(1:(ncol(teExpressionData)-2))]
+        teExpressionData<-teExpressionData[,seq(1,(ncol(teExpressionData)-2))]
       }
 
       #teExpressionData<-teExpressionData[,1:(ncol(teExpressionData)-2)]
