@@ -18,12 +18,12 @@ teEnrichment(inputGenes = NULL, rnaSeqDataset = 1,
 \item{multiHypoCorrection}{Flag to correct P-values for multiple hypothesis using BH method. Default TRUE.}
 }
 \value{
-The output is a SummarizedExperiment object. The information about the tissue-specific gene
-enrichment is in the metadata list of the output object. The name of the item in the list is
-"TissueSpecificGeneEnrichment". The item is a list with three objects. The first object is the enrichment
-matrix, the second object  contains the expression values and tissue-specificity information of the
-tissue-specific genes for genes from the input gene set, and the third is a vector containing genes
-that were not identified in the tissue-specific gene data.
+The output is a list with three objects. The first object is the
+SummarizedExperiment object containing the enrichment results, the second
+object contains the expression values and tissue-specificity information
+of the tissue-specific genes for genes from the input gene set, and the
+third is a GeneSet object containing genes that were not identified in the
+tissue-specific gene data.
 }
 \description{
 The teEnrichment function is used to calculate the enrichment of tissue-specific genes,
@@ -37,9 +37,12 @@ genes<-system.file("extdata", "inputGenes.txt", package = "TissueEnrich")
 inputGenes<-scan(genes,character())
 gs<-GeneSet(geneIds=inputGenes,organism="Homo Sapiens",geneIdType=SymbolIdentifier())
 output<-teEnrichment(gs)
-enrichmentOutput<-metadata(output)[["TissueSpecificGeneEnrichment"]]
+seEnrichmentOutput<-output[[1]]
+enrichmentOutput<-setNames(data.frame(assay(seEnrichmentOutput)),
+colData(seEnrichmentOutput)[,1])
+enrichmentOutput$Tissue<-row.names(enrichmentOutput)
 #Plotting the P-Values
-ggplot(enrichmentOutput[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,
+ggplot(enrichmentOutput,aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,
 label = Tissue.Specific.Genes,fill = Tissue))+
 geom_bar(stat = 'identity')+
 labs(x='', y = '-LOG10(P-Value)')+

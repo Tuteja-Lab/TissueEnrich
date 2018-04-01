@@ -49,7 +49,7 @@ Please **do not** email your questions directly to the package authors.
 
 # `teEnrichment`: Tissue-specific gene enrichment using human or mouse genes
 
-The `teEnrichment` function is used to calculate the enrichment of tissue-specific genes in an input gene set. It uses tissue-specific genes defined by processing RNA-Seq datasets from human and mouse. The user must specify the organism of the input data by using the `organism` argument (1 for “Homo Sapiens” (default) and 2 for “Mus Musculus”). More details about the RNA-Seq datasets and tissue-specific genes are discussed in the next sections.
+The `teEnrichment` function is used to calculate the enrichment of tissue-specific genes in an input gene set. It uses tissue-specific genes defined by processing RNA-Seq datasets from human and mouse. The user must specify the organism using the `organism` ("Homo Sapiens" (default) or "Mus Musculus") parameter in the input GeneSet object. More details about the RNA-Seq datasets and tissue-specific genes are discussed in the next sections.
 
 ## RNA-Seq datasets
 `TissueEnrich` defines tissue-specific genes using RNA-Seq data from the HPA, GTEx, and mouse ENCODE. In order to make the tissue-specific gene calculations more robust, we only used tissues that had ≥2 biological replicates. The datasets used in the tool are:
@@ -87,28 +87,28 @@ Where, N is the total number of genes, K is the total number of tissue-specific 
 ## Example: Tissue-specific gene enrichment
 This example uses trophectoderm (TE) specific genes identified from single cell RNA-Seq analyses, performed on human blastocysts on days 5, 6, and 7 of preimplantation development [@Petropoulos2016]. The single cells are assigned to either the inner cell mass (epiblast plus emerging extraembryonic endoderm) or the TE using PCA. After that, a list of 100 TE-specific genes was generated using differential gene expression analysis [@Petropoulos2016]. We used those 100 genes as the input gene set and carried out tissue-specific gene enrichment using the tissue-specific genes defined by the HPA dataset.
 
-**Note:** The input gene set can either contain Ensembl Ids or Gene Symbols (specify this using `geneFormat`).
+**Note:** The input gene set can either contain Ensembl Ids (`ENSEMBLIdentifier()`) or Gene Symbols (`SymbolIdentifier()`) (specify this using the `geneIdType` parameter in the input GeneSet object).
 
 ```{r eval=TRUE}
 library(TissueEnrich)
-library(dplyr)
 genes<-system.file("extdata", "inputGenes.txt", package = "TissueEnrich")
 inputGenes<-scan(genes,character())
 gs<-GeneSet(geneIds=inputGenes,organism="Homo Sapiens",geneIdType=SymbolIdentifier())
 output<-teEnrichment(inputGenes = gs)
-enrichmentOutput<-metadata(output)[["TissueSpecificGeneEnrichment"]]
 ```
 
-The `enrichmentOutput` is a list object containing the enrichment results. These results are explained in the next section.
+The `output` is a list object containing the enrichment results. These results are explained in the next section.
 
 ### Exploring tissue-specific gene enrichment results
 
 #### Tissue-specific gene enrichment histogram using `ggplot2`
-The first object in the `enrichmentOutput` list is a dataframe containing the $-Log_{10}(P-Value)$, corresponding to the tissue-specific gene enrichment, along with the number of tissue-specific genes in the input gene set. This dataframe object can be used to visualize tissue-specific gene enrichment in the form of a histogram.
+The first object in the `output` list is a `SummarizedExperiment` object containing the $-Log_{10}(P-Value)$, corresponding to the tissue-specific gene enrichment, along with the number of tissue-specific genes in the input gene set. This object can be used to visualize tissue-specific gene enrichment in the form of a histogram.
 
 ```{r eval=TRUE}
-library(ggplot2)
-ggplot(enrichmentOutput[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tissue.Specific.Genes,fill = Tissue))+
+seEnrichmentOutput<-output[[1]]
+enrichmentOutput<-setNames(data.frame(assay(seEnrichmentOutput)),colData(seEnrichmentOutput)[,1])
+enrichmentOutput$Tissue<-row.names(enrichmentOutput)
+ggplot(enrichmentOutput,aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tissue.Specific.Genes,fill = Tissue))+
       geom_bar(stat = 'identity')+
       labs(x='', y = '-LOG10(P-Value)')+
       theme_bw()+
@@ -120,14 +120,14 @@ ggplot(enrichmentOutput[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,la
 In the plot above, the x-axis shows each of the tissues, and the y-axis represents the tissue-specific gene enrichment ($-Log_{10}(P-Value)$) values. As expected, the 100 TE-specific genes show enrichment for placenta specific genes.
 
 #### Heatmap to show expression profiles of tissue-specific genes using `ggplot2`
-The second object in the `enrichmentOutput` is a list containing the tissue-specific genes (with expression and tissue-specificity information) for genes from the input gene set. 
+The second object in the `output` is a list containing the tissue-specific genes (with expression and tissue-specificity information) for genes from the input gene set. 
 
 The first item in this list has expression values of the tissue-specific genes identified from the input gene set. The expression values can be visualized in the form of a heatmap. For example, the code below generates a heatmap showing the expression of the placenta specific genes across all the tissues.
 
 ```{r eval=TRUE}
 library(tidyr)
-library(ggplot2)
-exp<-enrichmentOutput[[2]][["Placenta"]][[1]]
+seExp<-output[[2]][["Placenta"]][[1]]
+exp<-setNames(data.frame(assay(seExp)),colData(seExp)[,1])
 exp$Gene<-row.names(exp)
 exp<-exp %>% gather(Tissue=1:(ncol(exp)-1))
 
@@ -144,18 +144,19 @@ ggplot(exp, aes(key, Gene)) + geom_tile(aes(fill = value),
 ```
 
 #### Retrieval of input tissue-specific genes
-The second item in the second object of the `enrichmentOutput` list has tissue-specificity information for the input genes. The code below retrieves the tissue-specific genes along with the type of tissue-specificity in placenta tissue.
+The second item in the second object of the `output` list has tissue-specificity information for the input genes. The code below retrieves the tissue-specific genes along with the type of tissue-specificity in placenta tissue.
 
 ```{r eval=TRUE}
-groupInf<-enrichmentOutput[[2]][["Placenta"]][[2]]
+seGroupInf<-output[[2]][["Placenta"]][[2]]
+groupInf<-data.frame(assay(seGroupInf))
 print(head(groupInf))
 ```
 
 
 #### Retrieval of tissue-specific genes that could not be mapped
-The third object in the `enrichmentOutput` list is a character vector that has a list of input genes that were not identified in the tissue-specific gene data.
+The third object in the `output` list is a character vector that has a list of input genes that were not identified in the tissue-specific gene data.
 ```{r eval=TRUE}
-print(enrichmentOutput[[3]])
+print(geneIds(output[[3]]))
 ```
 
 ## Orthologous gene enrichment
@@ -171,8 +172,10 @@ genes<-system.file("extdata", "inputGenes.txt", package = "TissueEnrich")
 inputGenes<-scan(genes,character())
 gs<-GeneSet(geneIds=inputGenes,organism="Homo Sapiens",geneIdType=SymbolIdentifier())
 output<-teEnrichment(inputGenes = gs,rnaSeqDataset = 3)
-enrichmentOutput<-metadata(output)[["TissueSpecificGeneEnrichment"]]
-ggplot(enrichmentOutput[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tissue.Specific.Genes,fill = Tissue))+
+seEnrichmentOutput<-output[[1]]
+enrichmentOutput<-setNames(data.frame(assay(seEnrichmentOutput)),colData(seEnrichmentOutput)[,1])
+enrichmentOutput$Tissue<-row.names(enrichmentOutput)
+ggplot(enrichmentOutput,aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tissue.Specific.Genes,fill = Tissue))+
       geom_bar(stat = 'identity')+
       labs(x='', y = '-LOG10(P-Value)')+
       theme_bw()+
@@ -185,7 +188,7 @@ This result shows that human TE-specific genes also show enrichment for mouse pl
 
 # `teGeneRetrieval`: Identification of tissue-specific genes
 
-The `teGeneRetrieval` function is used to define tissue-specific genes, using the algorithm from the HPA [@HPA2015]. It takes an SummarizedExperiment object containing expression information as input (rowData as genes and colData as tissue) and classifies the genes into different gene groups and stores into its metadata. The users also have the option of changing the default thresholds to vary the degree of tissue specificity of genes. More details about the gene groups and HPA thresholds are provided below.
+The `teGeneRetrieval` function is used to define tissue-specific genes, using the algorithm from the HPA [@HPA2015]. It takes an `SummarizedExperiment` object containing expression information as input (rows as genes and columns as tissue) and classifies the genes into different gene groups and returns the information in another `SummarizedExperiment` object. The users also have the options of changing the default thresholds to vary the degree of tissue specificity of genes. More details about the gene groups and HPA thresholds are provided below.
 
 ## Gene groups
 The genes are divided into six groups based on their gene expression across the tissues. These groups are:
@@ -209,10 +212,10 @@ data<-system.file("extdata", "test.expressiondata.txt", package = "TissueEnrich"
 expressionData<-read.table(data,header=TRUE,row.names=1,sep='\t')
 se<-SummarizedExperiment(assays = SimpleList(as.matrix(expressionData)),rowData = row.names(expressionData),colData = colnames(expressionData))
 output<-teGeneRetrieval(se)
-head(metadata(output)[["TissueSpecificGenes"]])
+head(assay(output))
 ```
 
-As seen above, the metadata of the output consists of the tissue-specific genes information in a data frame with columns for Gene name, Tissue name, and Tissue-Specific group.
+As seen above, the `output` consists of the tissue-specific genes information in a `SummarizedExperiment` object with columns for Gene name, Tissue name, and Tissue-Specific group.
 
 # `teEnrichmentCustom`: Tissue-specific gene enrichment in custom expression datasets
 
@@ -221,15 +224,15 @@ The `teEnrichmentCustom` function is used to calculate tissue-specific gene enri
 ## Example: Tissue-specific gene enrichment in custom dataset
 The example uses 10 genes, randomly selected from the 36 genes used in the **Tissue-specific gene retrieval** example. The tissue-specific genes identified from the custom gene expression are used to calculate tissue-specific gene enrichment in the input gene set.
 
-```{r eval=TRUE}
+```{r eval=FALSE}
 library(TissueEnrich)
 library(ggplot2)
 genes<-system.file("extdata", "inputGenesEnsembl.txt", package = "TissueEnrich")
 inputGenes<-scan(genes,character())
 gs<-GeneSet(geneIds=inputGenes)
 output2<-teEnrichmentCustom(gs,output)
-enrichmentOutput<-metadata(output2)[["TissueSpecificGeneEnrichment"]]
-ggplot(enrichmentOutput[[1]],aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tissue.Specific.Genes,fill = Tissue))+
+enrichmentOutput<-setNames(data.frame(assay(output2[[1]])),colData(output2[[1]])[,1])
+ggplot(enrichmentOutput,aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tissue.Specific.Genes,fill = Tissue))+
       geom_bar(stat = 'identity')+
       labs(x='', y = '-LOG10(P-Value)')+
       theme_bw()+

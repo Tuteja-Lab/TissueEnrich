@@ -2,42 +2,48 @@
 % Please edit documentation in R/tissueEnrich.R
 \name{teGeneRetrieval}
 \alias{teGeneRetrieval}
-\title{Define tissue-specific genes by using the algorithm from the Human Protein Atlas}
+\title{Define tissue-specific genes by using the algorithm from the Human Protein
+Atlas}
 \usage{
 teGeneRetrieval(expressionData, foldChangeThreshold = 5,
   maxNumberOfTissues = 7, expressedGeneThreshold = 1)
 }
 \arguments{
-\item{expressionData}{A dataframe object containing gene expression values (Rows are genes and Tissues are columns).}
+\item{expressionData}{A SummarizedExperiment object containing gene expression values.}
 
 \item{foldChangeThreshold}{A numeric Threshold of fold change, default 5.}
 
-\item{maxNumberOfTissues}{A numeric Maximum number of tissues in a group for group enriched genes, default 7.}
+\item{maxNumberOfTissues}{A numeric Maximum number of tissues in a group for
+group enriched genes, default 7.}
 
-\item{expressedGeneThreshold}{A numeric Minimum gene expression cutoff for the gene to be called as expressed, default 1.}
+\item{expressedGeneThreshold}{A numeric Minimum gene expression cutoff for
+the gene to be called as expressed, default 1.}
 }
 \value{
-The output is a SummarizedExperiment object. The information about the tissue-specific genes
-is in the metadata list of the output object. The name of the item in the list is "TissueSpecificGenes".
-It will be a data frame object with three columns: Gene, Tissue, and Enrichment group of the gene in the
-given tissue.
+The output is a SummarizedExperiment object containing the
+information about the tissue-specific genes with three columns:
+Gene, Tissue, and Enrichment group of the gene in the given tissue.
 }
 \description{
-The teGeneRetrieval function is used to define tissue-specific genes, using the algorithm
-from the HPA (Uhlén et al. 2015). It takes a gene expression matrix as input (rows as genes and
-columns as tissue) and classifies the genes into different gene groups. The users also have the option
-of changing the default thresholds to vary the degree of tissue specificity of genes. More details
-about the gene groups and HPA thresholds are provided below. More details about the gene groups are
-provided in the vignette.
+The teGeneRetrieval function is used to define tissue-specific
+genes, using the algorithm
+from the HPA (Uhlén et al. 2015). It takes a gene expression
+SummarizedExperiment object as input
+(rows as genes and columns as tissue) and classifies the genes into
+different gene groups. The users also have the option of changing the
+default thresholds to vary the degree of tissue specificity of genes. More
+details about the gene groups and HPA thresholds are provided below. More
+details about the gene groups are provided in the vignette.
 }
 \examples{
 library(SummarizedExperiment)
-data<-system.file("extdata", "test.expressiondata.txt", package = "TissueEnrich")
+data<-system.file("extdata", "test.expressiondata.txt", package =
+"TissueEnrich")
 expressionData<-read.table(data,header=TRUE,row.names=1,sep='\\t')
-se<-SummarizedExperiment(assays = SimpleList(as.matrix(expressionData)),rowData =
-row.names(expressionData),colData = colnames(expressionData))
+se<-SummarizedExperiment(assays = SimpleList(as.matrix(expressionData)),
+rowData = row.names(expressionData),colData = colnames(expressionData))
 output<-teGeneRetrieval(se)
-head(metadata(output)[["TissueSpecificGenes"]])
+head(assay(output))
 }
 \author{
 Ashish Jain, Geetu Tuteja
