@@ -1,7 +1,7 @@
 ##To Supress Note
 utils::globalVariables(c("dataset", "%>%","Gene","Gene.name","Gene.stable.ID"
                          ,".","Human.gene.name","Human.gene.stable.ID","Group",
-                         "Tissue","metadata","geneIds","geneIdType",
+                         "Tissue","geneIds","geneIdType",
                          "ENSEMBLIdentifier","Log10PValue","SimpleList"))
 
 #' Calculate tissue-specific gene enrichment using the hypergeometric test
@@ -121,7 +121,6 @@ teEnrichment<-function(inputGenes = NULL,
   }else
   {
     stop("Please enter correct organism.",call. = FALSE)
-    #print("Please enter correct dataset")
   }
 
   if(isHomolog)
@@ -142,14 +141,14 @@ teEnrichment<-function(inputGenes = NULL,
 
   symbol<-geneIdType(SymbolIdentifier())
   ensembl<-geneIdType(ENSEMBLIdentifier())
-  geneId<-list(1, 2)
-  names(geneId)<-c(symbol,ensembl)
+  geneIdMap<-list(1, 2)
+  names(geneIdMap)<-c(ensembl,symbol)
   inputGeneId<-geneIdType(geneIdType(geInputGenes))
   if (inputGeneId != symbol &&
       inputGeneId != ensembl)
     stop("Gene Id type is not correct.",call. = FALSE)
 
-  geneFormat <- geneId[[inputGeneId]]
+  geneFormat <- geneIdMap[[inputGeneId]]
   inputGenes<-toupper(inputGenes)
   inputGenes<-unique(inputGenes)
 
@@ -158,91 +157,39 @@ teEnrichment<-function(inputGenes = NULL,
   {
     ####Calculation when working with orthologs
     #####Convert the Gene Id########
-    genesNotFound<-c()
-    if(organism == 1)
-    {
-      if(geneFormat == 2)
-      {
-        inputEnsemblGenes<-geneMapping %>%
-          dplyr::filter(Human.gene.name %in% inputGenes) %>%
-          dplyr::select(Gene.stable.ID)
-      }else
-      {
-        inputEnsemblGenes<-geneMapping %>%
-          dplyr::filter(Human.gene.stable.ID %in% inputGenes) %>%
-          dplyr::select(Gene.stable.ID)
-      }
-      inputEnsemblGenes<-as.character(inputEnsemblGenes$Gene.stable.ID)
-
-      ##Updating the geneMapping
-      geneMappingForCurrentDataset<-geneMapping %>%
-        dplyr::filter(Gene.stable.ID %in% row.names(expressionDataLocal))
-
-      #####Check for genes which are not there in our list########
-      if(length(inputGenes) != length(intersect(as.character(geneMappingForCurrentDataset$Gene.stable.ID),inputEnsemblGenes)))
-      {
-        if(geneFormat == 2)
-        {
-          genesNotFoundList<-base::setdiff(inputGenes,as.character(geneMappingForCurrentDataset$Human.gene.name))
-        }else
-        {
-          genesNotFoundList<-base::setdiff(inputGenes,as.character(geneMappingForCurrentDataset$Human.gene.stable.ID))
-        }
-        genesNotFound<-c(genesNotFoundList)
-        inputEnsemblGenes<-intersect(row.names(expressionDataLocal),inputEnsemblGenes)
-      }
-
-      ###retreving mapping based on gene format.
-      if(geneFormat == 2)
-      {
-        geneMappingForCurrentDataset<-geneMappingForCurrentDataset %>% dplyr::select(Gene.stable.ID,Human.gene.name)
-      }else if(geneFormat == 1)
-      {
-        geneMappingForCurrentDataset<-geneMappingForCurrentDataset %>% dplyr::select(Gene.stable.ID,Human.gene.stable.ID)
-      }
-      colnames(geneMappingForCurrentDataset)<-c("Gene","Gene.name")
-
-    }else
-    {
-      if(geneFormat == 2)
-      {
-        inputEnsemblGenes<-geneMapping %>% dplyr::filter(Gene.name %in% inputGenes) %>% dplyr::select(Human.gene.stable.ID)
-      }else
-      {
-        inputEnsemblGenes<-geneMapping %>% dplyr::filter(Gene.stable.ID %in% inputGenes) %>% dplyr::select(Human.gene.stable.ID)
-      }
-      inputEnsemblGenes<-as.character(inputEnsemblGenes$Human.gene.stable.ID)
-      ##Updating the geneMapping
-      geneMappingForCurrentDataset<-geneMapping %>% dplyr::filter(Human.gene.stable.ID %in% row.names(expressionDataLocal))
-      #####Check for genes which are not there in our list########
-      if(length(inputGenes) != length(intersect(as.character(geneMappingForCurrentDataset$Human.gene.stable.ID),inputEnsemblGenes)))
-      {
-        if(geneFormat == 2)
-        {
-          genesNotFoundList<-base::setdiff(inputGenes,as.character(geneMappingForCurrentDataset$Gene.name))
-        }else
-        {
-          genesNotFoundList<-base::setdiff(inputGenes,as.character(geneMappingForCurrentDataset$Gene.stable.ID))
-        }
-        genesNotFound<-c(length(genesNotFoundList),genesNotFoundList)
-        inputEnsemblGenes<-intersect(row.names(expressionDataLocal),inputEnsemblGenes)
-      }
-      ###retreving mapping based on gene format.
-      if(geneFormat == 2)
-      {
-        geneMappingForCurrentDataset<-geneMappingForCurrentDataset %>% dplyr::select(Human.gene.stable.ID,Gene.name)
-      }else if(geneFormat == 1)
-      {
-        geneMappingForCurrentDataset<-geneMappingForCurrentDataset %>% dplyr::select(Human.gene.stable.ID,Gene.stable.ID)
-      }
-      colnames(geneMappingForCurrentDataset)<-c("Gene","Gene.name")
-    }
-
-    finalTissueSpecificGenes<-finalTissueSpecificGenes %>% dplyr::filter(Gene %in% geneMappingForCurrentDataset$Gene)
+    genesNotFound <- c()
+    homologMappingHeader <- list(list(c("Human.gene.stable.ID","Gene.stable.ID"),
+                                    c("Human.gene.name","Gene.stable.ID")),
+                               list(c("Gene.name","Human.gene.stable.ID"),
+                                    c("Gene.stable.ID","Human.gene.stable.ID"))
+                               )
+    mappingList <- homologMappingHeader[[organism]][[geneFormat]]
+    geneId <- geneMapping[,mappingList[1]] %in% inputGenes
+    inputEnsemblGenes <- (geneMapping[geneId,mappingList[2]])
+    #print(head(inputEnsemblGenes))
+    ##Updating the geneMapping
+    geneId <- geneMapping[,mappingList[2]] %in% row.names(expressionDataLocal)
+    geneMappingForCurrentDataset<-geneMapping[geneId, ]
+    #print(dim(geneMappingForCurrentDataset))
+    genesNotFound <- base::setdiff(inputGenes,as.character(
+      geneMappingForCurrentDataset[,mappingList[1]]))
+    #print(head(genesNotFound))
+    inputEnsemblGenes <- intersect(row.names(expressionDataLocal),inputEnsemblGenes)
+    #print(head(inputEnsemblGenes))
+    geneMappingForCurrentDataset <- geneMappingForCurrentDataset[,rev(mappingList)]
+    #print(head(geneMappingForCurrentDataset))
+    colnames(geneMappingForCurrentDataset)<-c("Gene","Gene.name")
+    #print(dim(geneMappingForCurrentDataset))
+    finalTissueSpecificGenes<-finalTissueSpecificGenes %>%
+      dplyr::filter(Gene %in% geneMappingForCurrentDataset$Gene)
   }else{
 
+    geneIdHeaderMapping<-list(c("Gene","Gene"),c("Gene","Gene.name"))
     ####Normal Calculation
     #####Convert the Gene Id########
+    geneId <- geneMapping[,geneIdHeaderMapping[[geneFormat]][2]] %in% inputGenes
+    inputEnsemblGenes<-geneMapping[geneId,geneIdHeaderMapping[[geneFormat]][1]]
+
     if(geneFormat == 2)
     {
       inputEnsemblGenes<-geneMapping %>% dplyr::filter(Gene.name %in% inputGenes) %>% dplyr::select(Gene)
@@ -256,16 +203,17 @@ teEnrichment<-function(inputGenes = NULL,
     #####Check for genes which are not there in our list########
     genesNotFound<-c()
     ensemblGenesInCurrentDataset<-as.character(geneMappingForCurrentDataset$Gene)
-    geneSymbolInCurrentDataset<-as.character(geneMappingForCurrentDataset$Gene.name)
+    #geneSymbolInCurrentDataset<-as.character(geneMappingForCurrentDataset$Gene.name)
     if(length(inputGenes) != length(intersect(ensemblGenesInCurrentDataset,inputEnsemblGenes)))
     {
-      if(geneFormat == 2)
-      {
-        genesNotFound<-base::setdiff(inputGenes,geneSymbolInCurrentDataset)
-      }else
-      {
-        genesNotFound<-base::setdiff(inputGenes,ensemblGenesInCurrentDataset)
-      }
+      genesNotFound<-base::setdiff(inputGenes,geneMappingForCurrentDataset[,geneIdHeaderMapping[[geneFormat]][1]])
+      # if(geneFormat == 2)
+      # {
+      #   genesNotFound<-base::setdiff(inputGenes,geneSymbolInCurrentDataset)
+      # }else
+      # {
+      #   genesNotFound<-base::setdiff(inputGenes,ensemblGenesInCurrentDataset)
+      # }
       inputEnsemblGenes<-intersect(ensemblGenesInCurrentDataset,inputEnsemblGenes)
     }
   }
