@@ -1,8 +1,6 @@
 ##To Supress Note
 utils::globalVariables(c("dataset", "%>%","Gene","Gene.name","Gene.stable.ID"
-                         ,".","Human.gene.name","Human.gene.stable.ID","Group",
-                         "Tissue","metadata","geneIds","geneIdType",
-                         "ENSEMBLIdentifier","Log10PValue","SimpleList"))
+                         ,".","Group", "geneIds","geneIdType","SimpleList"))
 
 #' Define tissue-specific genes by using the algorithm from the Human Protein
 #' Atlas
@@ -59,7 +57,8 @@ teGeneRetrieval <- function(expressionData,foldChangeThreshold=5,
                                             numeric value greater than
                                             or equal to 1.")
   maxNumberOfTissues <- ensurer::ensure_that(maxNumberOfTissues, !is.null(.) &&
-                                             is.numeric(.) && (. >=2),err_desc =
+                                             is.numeric(.) && (. >=2),
+                                             err_desc =
                                              "maxNumberOfTissues should be an
                                               integer value greater than or
                                               equal to 2.")
@@ -72,163 +71,127 @@ teGeneRetrieval <- function(expressionData,foldChangeThreshold=5,
                                         equal to 0.")
   SEExpressionData <- expressionData
   minNumberOfTissues <- 2
-  notExpressed <- data.frame()
-  expressedInAll <- data.frame()
-  mixedGenes <- data.frame()
-  tissueEnriched <- data.frame()
-  groupEnriched <- data.frame()
-  tissueEnhanced <- data.frame()
 
   ###Creating the expression dataframe object from summarized object.
   expressionData <- setNames(data.frame(assay(expressionData),row.names =
                                         rowData(expressionData)[,1]),
                            colData(expressionData)[,1])
-  for(gene in row.names(expressionData))
-  {
-    tpm <- data.frame(t(expressionData[gene, ,drop = FALSE]))
-    ##Sorting the genes based on expression
-    ##Needed to group the genes based on different categories
-    #print(tpm)
-    tpm <- tpm[order(-tpm[gene]), ,drop = FALSE]
-    highTPM <- tpm[1,]
+  gene<-1
+  start.time <- Sys.time()
+  geneList<-as.list(row.names(expressionData))
+  x <- apply(expressionData,1, FUN =
+                function(j){
+                  df<-c()
+                  tpm <- j
+                  tpm <- sort(tpm,decreasing = TRUE)
+                  highTPM <- tpm[1]
 
-    ####Check for Not Expressed
-    if(highTPM >= expressedGeneThreshold)
-    {
-      secondHighTPM <- tpm[2,]
-      foldChangeHigh <- highTPM/secondHighTPM
-      ###Check for Tissue Enriched
-      if(foldChangeHigh >= foldChangeThreshold)
-      {
-        df <- cbind(Gene = gene,Tissue = row.names(tpm)[1],
-                  Group = "Tissue-Enriched")
-        tissueEnriched <- rbind(tissueEnriched,df)
-      }else
-      {
-        ####Check for Group Enriched
-        thresholdForGroupTPM <- highTPM/foldChangeThreshold
-        groupTPM <- tpm[(tpm[gene] >= thresholdForGroupTPM) &
-                        (tpm[gene] >= expressedGeneThreshold), ,drop=FALSE]
-        isFound <- FALSE
-        if(nrow(groupTPM) <= maxNumberOfTissues &&
-           nrow(groupTPM) >= minNumberOfTissues)
-        {
-          for(i in 2:(nrow(groupTPM)))
-          {
-            meanTPMForGroup <- mean(groupTPM[seq(1,i),])
-            highestTPMOutsideGroup <- tpm[i+1,]
-            if((meanTPMForGroup/highestTPMOutsideGroup) >= foldChangeThreshold)
-            {
-              ##To put this genes as group enriched for only the
-              ##tissues which satisfy the threhold or all the
-              ##tissues??
-              x <- lapply(seq(1,i), FUN =
-                            function(j){
-                              cbind(Gene=gene,
-                                    Tissue=row.names(tpm)[j],
-                                    Group="Group-Enriched")});
-              df <- do.call("rbind", x)
-              groupEnriched <- rbind(groupEnriched,df)
+                  ####Check for Not Expressed
+                  if(highTPM >= expressedGeneThreshold)
+                  {
+                    secondHighTPM <- tpm[2]
+                    foldChangeHigh <- highTPM/secondHighTPM
+                    ###Check for Tissue Enriched
+                    if(foldChangeHigh >= foldChangeThreshold)
+                    {
+                      df <- cbind(Gene = gene,Tissue = names(tpm)[1],
+                                  Group = "Tissue-Enriched")
+                    }else
+                    {
+                      ####Check for Group Enriched
+                      thresholdForGroupTPM <- highTPM/foldChangeThreshold
+                      groupTPM <- tpm[(tpm >= thresholdForGroupTPM) &
+                                        (tpm >= expressedGeneThreshold),drop=FALSE]
+                      isFound <- FALSE
+                      if(length(groupTPM) <= maxNumberOfTissues &&
+                         length(groupTPM) >= minNumberOfTissues)
+                      {
+                        # df<-lapply(2:(length(groupTPM)),FUN = function(i){
+                        #
+                        #   meanTPMForGroup <- mean(groupTPM[seq(1,i)])
+                        #   highestTPMOutsideGroup <- tpm[i+1]
+                        #   if((meanTPMForGroup/highestTPMOutsideGroup) >= foldChangeThreshold)
+                        #   {
+                        #     ##To put this genes as group enriched for only the
+                        #     ##tissues which satisfy the threhold or all the
+                        #     ##tissues??
+                        #     x <- lapply(seq(1,i), FUN =
+                        #                   function(j){
+                        #                     cbind(Gene=gene,
+                        #                           Tissue=names(tpm)[j],
+                        #                           Group="Group-Enriched")});
+                        #     df <- do.call("rbind", x)
+                        #     isFound <<- TRUE
+                        #     return(df)
+                        #     break;
+                        #   }
+                        #
+                        # })
 
-              # for(j in seq(1,i))
-              # {
-              #   df<-cbind(Gene=gene,Tissue=row.names(tpm)[j],
-              #             Group="Group-Enriched")
-              #   groupEnriched<-rbind(groupEnriched,df)
-              # }
-              isFound <- TRUE
-              break;
-            }
-          }
-          if(!isFound)
-          {
-            ####Check for Expressed In All
-            if(tpm[nrow(tpm),] >= expressedGeneThreshold)
-            {
-              isFound <- TRUE
-              df <- cbind(Gene=gene,Tissue="All",Group=
-                          "Expressed-In-All")
-              expressedInAll <- rbind(expressedInAll,df)
-            }else
-            {
-              ####Check for Tissue Enhanced
-              tissueEnhancedThreshold <- mean(tpm[,gene]) * foldChangeThreshold
-              enhancedGene <- tpm[(tpm[gene] >= tissueEnhancedThreshold) &
-                                (tpm[gene] >=expressedGeneThreshold),
-                                ,drop=FALSE]
-              if(nrow(enhancedGene) >=1 )
-              {
-                isFound <- TRUE
-                x <- lapply(row.names(enhancedGene), FUN =
-                              function(enhancedTissue){
-                                cbind(Gene=gene,Tissue=enhancedTissue,
-                                      Group="Tissue-Enhanced")
-                                });
-                df <- do.call("rbind", x)
-                tissueEnhanced <- rbind(tissueEnhanced,df)
-                # for(enhancedTissue in row.names(enhancedGene))
-                # {
-                #   df<-cbind(Gene=gene,Tissue=enhancedTissue,
-                #             Group="Tissue-Enhanced")
-                #   tissueEnhanced<-rbind(tissueEnhanced,df)
-                # }
-              }
-              if(!isFound)
-              {
-                df <- cbind(Gene=gene,Tissue="All",Group="Mixed")
-                mixedGenes <- rbind(mixedGenes,df)
-                #mixedGenes<-c(mixedGenes,gene)
-              }
-            }
-          }
-        }else
-        {
-          ###Put the same code here also
-          ####Check for Expressed In All
-          if(tpm[nrow(tpm),] >= expressedGeneThreshold)
-          {
-            isFound <- TRUE
-            df <- cbind(Gene=gene,Tissue="All",Group="Expressed-In-All")
-            expressedInAll <- rbind(expressedInAll,df)
-          }else
-          {
-            ####Check for Tissue Enhanced
-            tissueEnhancedThreshold <- mean(tpm[,gene]) * foldChangeThreshold
-            enhancedGene <- tpm[(tpm[gene] > tissueEnhancedThreshold)
-                          & (tpm[gene] >= expressedGeneThreshold), ,drop=FALSE]
-            if(nrow(enhancedGene) >= 1)
-            {
-              isFound <- TRUE
-              x <- lapply(row.names(enhancedGene), FUN =
-                            function(enhancedTissue){
-                              cbind(Gene=gene,Tissue=enhancedTissue,
-                                    Group="Tissue-Enhanced")
-                              });
-              df <- do.call("rbind", x)
-              tissueEnhanced <- rbind(tissueEnhanced,df)
-              # for(enhancedTissue in row.names(enhancedGene))
-              # {
-              #   df<-cbind(Gene=gene,Tissue=enhancedTissue,
-              #             Group="Tissue-Enhanced")
-              #   tissueEnhanced<-rbind(tissueEnhanced,df)
-              # }
-            }
-            if(!isFound)
-            {
-              df <- cbind(Gene=gene,Tissue="All",Group="Mixed")
-              mixedGenes <- rbind(mixedGenes,df)
-            }
-          }
-        }
-      }
-    }else
-    {
-      df <- cbind(Gene=gene,Tissue="All",Group="Not-Expressed")
-      notExpressed <- rbind(notExpressed,df)
-    }
-  }
-  TSGenes <- rbind(tissueEnriched,groupEnriched,tissueEnhanced,
-                 notExpressed,expressedInAll,mixedGenes)
-  return(SummarizedExperiment(assays = SimpleList(as.matrix(TSGenes)),
+                        for(i in 2:(length(groupTPM)))
+                        {
+                          meanTPMForGroup <- mean(groupTPM[seq(1,i)])
+                          highestTPMOutsideGroup <- tpm[i+1]
+                          if((meanTPMForGroup/highestTPMOutsideGroup) >=
+                             foldChangeThreshold)
+                          {
+                            x <- lapply(seq(1,i), FUN =
+                                          function(j){
+                                            cbind(Gene=gene,
+                                                  Tissue=names(tpm)[j],
+                                                  Group="Group-Enriched")});
+                            df <- do.call("rbind", x)
+                            isFound <- TRUE
+                            break;
+                          }
+                        }
+
+                      }
+                      if(!isFound)
+                      {
+                        ####Check for Expressed In All
+                        if(all(tpm >= expressedGeneThreshold))
+                        {
+                          #isFound <- TRUE
+                          df <- cbind(Gene=gene,Tissue="All",Group=
+                                        "Expressed-In-All")
+                        }else
+                        {
+                          ####Check for Tissue Enhanced
+                          tissueEnhancedThreshold <- mean(tpm) * foldChangeThreshold
+                          enhancedGene <- tpm[(tpm >= tissueEnhancedThreshold)
+                                              & (tpm >= expressedGeneThreshold),
+                                              drop=FALSE]
+                          if(length(enhancedGene) >=1 )
+                          {
+                            #isFound <- TRUE
+                            x <- lapply(names(enhancedGene), FUN =
+                                          function(enhancedTissue){
+                                            cbind(Gene=gene,
+                                                  Tissue=enhancedTissue,
+                                                  Group="Tissue-Enhanced")
+                                          });
+                            df <- do.call("rbind", x)
+                          }else
+                          {
+                            df <- cbind(Gene=gene,Tissue="All",Group="Mixed")
+                          }
+                        }
+                      }
+                    }
+                  }else
+                  {
+                    df <- cbind(Gene=gene,Tissue="All",Group="Not-Expressed")
+                  }
+                  gene<<-gene + 1
+                  return(df)
+                });
+
+  TSGenes <- do.call("rbind", x)
+  TSGenes[,"Gene"]<-unlist(geneList[as.numeric(TSGenes[,"Gene"])])
+  end.time <- Sys.time()
+  time.taken <- end.time - start.time
+  print(time.taken)
+  return(SummarizedExperiment(assays = SimpleList(TSGenes),
                               colData = colnames(TSGenes)))
 }
