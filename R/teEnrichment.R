@@ -270,11 +270,11 @@ teEnrichment <- function(inputGenes = NULL, rnaSeqDataset = 1,
         pValueList <- stats::p.adjust(pValueList, method = "BH")
     }
     pValueList <- (-log10(pValueList))
-    output <- matrix(c(pValueList, unlist(df[, 2])),
-        nrow = length(pValueList))
-    seOutput <- SummarizedExperiment(assays = SimpleList(output),
-        rowData = unlist(df[, 3]), colData = c("Log10PValue",
-            "Tissue.Specific.Genes"))
+    output <- data.frame(Log10PValue=pValueList,
+                            Tissue.Specific.Genes=unlist(df[, 2]),
+                                row.names = unlist(df[, 3]))
+    seOutput <- SummarizedExperiment(assays = SimpleList(as.matrix(output)),
+        rowData = row.names(output), colData = colnames(output))
     overlapTissueGenesList <- do.call(function(...) mapply(c,
         ..., SIMPLIFY = FALSE), args = list(df[, 4],
         df[, 5]))
