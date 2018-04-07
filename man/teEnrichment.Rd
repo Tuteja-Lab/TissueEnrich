@@ -9,16 +9,16 @@ teEnrichment(inputGenes = NULL, rnaSeqDataset = 1,
 }
 \arguments{
 \item{inputGenes}{A GeneSet object containing the input genes, organism type
-("Homo Sapiens" or "Mus Musculus"), and gene id identifier (Gene Symbol or
+('Homo Sapiens' or 'Mus Musculus'), and gene id identifier (Gene Symbol or
 ENSEMBL identifier).}
 
 \item{rnaSeqDataset}{An integer describing the dataset to be used for
-enrichment analysis. 1 for "Human Protein Atlas" (default), 2 for "GTEx",
-3 for "Mouse ENCODE". Default 1.}
+enrichment analysis. 1 for 'Human Protein Atlas' (default), 2 for 'GTEx',
+3 for 'Mouse ENCODE'. Default 1.}
 
 \item{tissueSpecificGeneType}{An integer describing the type of tissue-
-specific genes to be used. 1 for "All" (default), 2 for "Tissue-Enriched",
- 3 for "Tissue-Enhanced", and 4 for "Group-Enriched". Default 1.}
+specific genes to be used. 1 for 'All' (default), 2 for 'Tissue-Enriched',
+ 3 for 'Tissue-Enhanced', and 4 for 'Group-Enriched'. Default 1.}
 
 \item{multiHypoCorrection}{Flag to correct P-values for multiple hypothesis
 using BH method. Default TRUE.}
@@ -39,9 +39,9 @@ genes defined by processing RNA-Seq datasets from human and mouse.
 \examples{
 library(dplyr)
 library(ggplot2)
-genes<-system.file("extdata", "inputGenes.txt", package = "TissueEnrich")
+genes<-system.file('extdata', 'inputGenes.txt', package = 'TissueEnrich')
 inputGenes<-scan(genes,character())
-gs<-GeneSet(geneIds=inputGenes,organism="Homo Sapiens",
+gs<-GeneSet(geneIds=inputGenes,organism='Homo Sapiens',
 geneIdType=SymbolIdentifier())
 output<-teEnrichment(gs)
 seEnrichmentOutput<-output[[1]]
@@ -55,7 +55,7 @@ label = Tissue.Specific.Genes,fill = Tissue))+
 geom_bar(stat = 'identity')+
 labs(x='', y = '-LOG10(P-Value)')+
 theme_bw()+
-theme(legend.position="none")+
+theme(legend.position='none')+
 theme(plot.title = element_text(hjust = 0.5,size = 20),axis.title =
 element_text(size=15))+
 theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),

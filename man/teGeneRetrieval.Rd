@@ -38,8 +38,8 @@ details about the gene groups are provided in the vignette.
 }
 \examples{
 library(SummarizedExperiment)
-data<-system.file("extdata", "test.expressiondata.txt", package =
-"TissueEnrich")
+data<-system.file('extdata', 'test.expressiondata.txt', package =
+'TissueEnrich')
 expressionData<-read.table(data,header=TRUE,row.names=1,sep='\\t')
 se<-SummarizedExperiment(assays = SimpleList(as.matrix(expressionData)),
 rowData = row.names(expressionData),colData = colnames(expressionData))

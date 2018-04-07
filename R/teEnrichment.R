@@ -204,7 +204,7 @@ teEnrichment <- function(inputGenes = NULL, rnaSeqDataset = 1,
                 as.character(intGenes$Gene), ]
             genes <- row.names(teExpressionData)
             teExpressionData$Gene <- genes
-            teExpressionData <- left_join(teExpressionData,
+            teExpressionData <- dplyr::left_join(teExpressionData,
                 geneMappingForCurrentDataset, by = "Gene")
             if (nrow(teExpressionData) > 0) {
                 ##### Code to take the mean of the genes with multiple
@@ -223,7 +223,7 @@ teEnrichment <- function(inputGenes = NULL, rnaSeqDataset = 1,
             ## code to convert ensembl Id for groups
             teInputGeneGroups <- tissueGenes %>% dplyr::filter(Gene %in%
                 intGenes$Gene) %>% select(Gene, Group)
-            teInputGeneGroups <- left_join(teInputGeneGroups,
+            teInputGeneGroups <- dplyr::left_join(teInputGeneGroups,
                 geneMappingForCurrentDataset, by = "Gene") %>%
                 select(Gene.name, Group)
             colnames(teInputGeneGroups) <- c("Gene",

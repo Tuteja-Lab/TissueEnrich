@@ -1,5 +1,5 @@
 import(ggplot2)
-import(dplyr)
+importFrom(dplyr, filter, select, left_join)
 import(ensurer)
 import(SummarizedExperiment)
 importFrom(GSEABase,GeneSet,SymbolIdentifier,EntrezIdentifier)
