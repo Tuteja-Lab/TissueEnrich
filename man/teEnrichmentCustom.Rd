@@ -15,8 +15,8 @@ teEnrichmentCustom(inputGenes = NULL, tissueSpecificGenes = NULL,
 `teGeneRetrieval` function. Default NULL.}
 
 \item{tissueSpecificGeneType}{An integer describing the type of
-tissue-specific genes to be used. 1 for "All" (default), 2 for
-"Tissue-Enriched",3 for "Tissue-Enhanced", and 4 for "Group-Enriched".
+tissue-specific genes to be used. 1 for 'All' (default), 2 for
+'Tissue-Enriched',3 for 'Tissue-Enhanced', and 4 for 'Group-Enriched'.
 Default 1.}
 
 \item{multiHypoCorrection}{Flag to correct P-values for multiple hypothesis
@@ -36,20 +36,21 @@ the teGeneRetrieval function.
 }
 \examples{
 library(dplyr)
-data<-system.file("extdata", "test.expressiondata.txt", package =
-"TissueEnrich")
+data<-system.file('extdata', 'test.expressiondata.txt', package =
+'TissueEnrich')
 expressionData<-read.table(data,header=TRUE,row.names=1,sep='\\t')
 se<-SummarizedExperiment(assays = SimpleList(as.matrix(expressionData)),
 rowData = row.names(expressionData),colData = colnames(expressionData))
 output<-teGeneRetrieval(se)
-head(metadata(output)[["TissueSpecificGenes"]])
-genes<-system.file("extdata", "inputGenesEnsembl.txt", package =
-"TissueEnrich")
+head(metadata(output)[['TissueSpecificGenes']])
+genes<-system.file('extdata', 'inputGenesEnsembl.txt', package =
+'TissueEnrich')
 inputGenes<-scan(genes,character())
 gs<-GeneSet(geneIds=inputGenes)
 output2<-teEnrichmentCustom(gs,output)
 #Plotting the P-Values
-enrichmentOutput<-setNames(data.frame(assay(output2[[1]])),
+enrichmentOutput<-setNames(data.frame(assay(output2[[1]]),
+row.names = rowData(output2[[1]])[,1]),
 colData(output2[[1]])[,1])
 enrichmentOutput$Tissue<-row.names(enrichmentOutput)
 ggplot(enrichmentOutput,aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,
@@ -57,7 +58,7 @@ label = Tissue.Specific.Genes,fill = Tissue))+
 geom_bar(stat = 'identity')+
 labs(x='', y = '-LOG10(P-Value)')+
 theme_bw()+
-theme(legend.position="none")+
+theme(legend.position='none')+
 theme(plot.title = element_text(hjust = 0.5,size = 20),axis.title =
 element_text(size=15))+
 theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),

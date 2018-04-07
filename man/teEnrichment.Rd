@@ -45,7 +45,8 @@ gs<-GeneSet(geneIds=inputGenes,organism="Homo Sapiens",
 geneIdType=SymbolIdentifier())
 output<-teEnrichment(gs)
 seEnrichmentOutput<-output[[1]]
-enrichmentOutput<-setNames(data.frame(assay(seEnrichmentOutput)),
+enrichmentOutput<-setNames(data.frame(assay(seEnrichmentOutput),
+row.names = rowData(seEnrichmentOutput)[,1]),
 colData(seEnrichmentOutput)[,1])
 enrichmentOutput$Tissue<-row.names(enrichmentOutput)
 #Plotting the P-Values
