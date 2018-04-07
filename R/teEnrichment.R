@@ -251,6 +251,7 @@ teEnrichment <- function(inputGenes = NULL, rnaSeqDataset = 1,
 
         seTeInputGeneGroups <- SummarizedExperiment(
             assays = SimpleList(as.matrix(teInputGeneGroups)),
+            rowData = row.names(teInputGeneGroups),
             colData = colnames(teInputGeneGroups))
         tissueName <- tissueDetails[tissueDetails$RName ==
             tissue, "TissueName"]

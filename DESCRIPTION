@@ -1,7 +1,7 @@
 Package: TissueEnrich
 Type: Package
 Title: TissueEnrich
-Version: 0.99.6
+Version: 0.99.7
 Authors@R: c(person("Ashish Jain", "Package Creator and Maintainer",
         email="jain@iastate.edu",
         role=c("aut", "cre")), person("Geetu Tuteja", "Package Maintainer",
@@ -12,13 +12,13 @@ License: MIT + file LICENSE
 VignetteBuilder: knitr
 Depends:
     R (>= 3.5),
-    dplyr (>= 0.7.3),
     ensurer (>= 1.1.0),
     ggplot2 (>= 2.2.1),
     SummarizedExperiment (>= 1.6.5),
     GSEABase (>= 1.38.2)
 Imports:
     tidyr (>= 0.8.0),
+    dplyr (>= 0.7.3),
     stats
 Suggests: knitr, rmarkdown , testthat
 Encoding: UTF-8

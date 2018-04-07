@@ -128,6 +128,7 @@ teEnrichmentCustom <- function(inputGenes = NULL, tissueSpecificGenes = NULL,
 
                     seTeInputGeneGroups <- SummarizedExperiment(
                         assays = SimpleList(as.matrix(teInputGeneGroups)),
+                                    rowData = row.names(teInputGeneGroups),
                                     colData = colnames(teInputGeneGroups))
 
                     GenesInTissue <- nrow(tissueGenes)
