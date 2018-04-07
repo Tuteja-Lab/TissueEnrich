@@ -195,7 +195,7 @@ teEnrichment <- function(inputGenes = NULL, rnaSeqDataset = 1,
             inputEnsemblGenes))
         ## Code block to take the mean of the genes with
         ## multiple ensembl Ids.
-        if (geneFormat == 2) {
+        if (geneFormat == 2 || isHomolog) {
             ## code to convert ensembl Id to gene names
             intGenes <- geneMappingForCurrentDataset %>%
                 dplyr::filter(Gene %in% intersect(tissueGenes$Gene,
