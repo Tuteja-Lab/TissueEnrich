@@ -210,11 +210,12 @@ teEnrichment <- function(inputGenes = NULL, rnaSeqDataset = 1,
                 ##### Code to take the mean of the genes with multiple
                 ##### ensembl Ids.
                 teExpressionData <- as.data.frame(
-                    t(sapply(unique(teExpressionData$Gene.name),
+                    t(vapply(unique(teExpressionData$Gene.name),
                     FUN = function(col)
                         colMeans(teExpressionData[
                             teExpressionData$Gene.name == col,
-                            c(seq(1, (ncol(teExpressionData) - 2)))]))))
+                            c(seq(1, (ncol(teExpressionData) - 2)))]),
+                              numeric(length(tissueNames)))))
             } else {
                 teExpressionData <- teExpressionData[,
                     seq(1, (ncol(teExpressionData) - 2))]
