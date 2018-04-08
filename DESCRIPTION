@@ -1,7 +1,7 @@
 Package: TissueEnrich
 Type: Package
 Title: TissueEnrich
-Version: 0.99.9
+Version: 0.99.10
 Authors@R: c(person("Ashish Jain", "Package Creator and Maintainer",
         email="jain@iastate.edu",
         role=c("aut", "cre")), person("Geetu Tuteja", "Package Maintainer",
