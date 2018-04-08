@@ -26,10 +26,10 @@ using BH method. Default TRUE.}
 \value{
 The output is a list with three objects. The first object is the
 SummarizedExperiment object containing the enrichment results, the second
-object contains the expression values and tissue-specificity information
-of the tissue-specific genes for genes from the input gene set, and the
-third is a GeneSet object containing genes that were not identified in the
-tissue-specific gene data.
+and the third object contains the expression values and tissue-specificity
+information of the tissue-specific genes for genes from the input
+gene set, and the fourth is a GeneSet object containing genes that
+were not identified in the tissue-specific gene data.
 }
 \description{
 The teEnrichment function is used to calculate the enrichment

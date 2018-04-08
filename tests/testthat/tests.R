@@ -21,7 +21,7 @@ output<-teEnrichment(inputGenes = gs)
 TSGEOutput<-data.frame(assay(output[[1]]))
 
 test_that("check the length of the output from teGeneEnrichment", {
-  expect_equal(length(output), 3)
+  expect_equal(length(output), 4)
 })
 
 test_that("check number of columns of the enrichment matrix", {

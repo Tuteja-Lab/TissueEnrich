@@ -14,10 +14,10 @@ Depends:
     R (>= 3.4),
     ensurer (>= 1.1.0),
     ggplot2 (>= 2.2.1),
+    tidyr (>= 0.8.0),
     SummarizedExperiment (>= 1.6.5),
     GSEABase (>= 1.38.2)
 Imports:
-    tidyr (>= 0.8.0),
     dplyr (>= 0.7.3),
     stats
 Suggests: knitr, rmarkdown , testthat

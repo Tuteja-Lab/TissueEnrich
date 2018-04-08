@@ -120,13 +120,11 @@ ggplot(enrichmentOutput,aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label =
 In the plot above, the x-axis shows each of the tissues, and the y-axis represents the tissue-specific gene enrichment ($-Log_{10}(P-Value)$) values. As expected, the 100 TE-specific genes show enrichment for placenta specific genes.
 
 #### Heatmap to show expression profiles of tissue-specific genes using `ggplot2`
-The second object in the `output` is a list containing the tissue-specific genes (with expression and tissue-specificity information) for genes from the input gene set. 
-
-The first item in this list has expression values of the tissue-specific genes identified from the input gene set. The expression values can be visualized in the form of a heatmap. For example, the code below generates a heatmap showing the expression of the placenta specific genes across all the tissues.
+The second object in the `output` is a list containing the expression values of the tissue-specific genes identified from the input gene set. The expression values can be visualized in the form of a heatmap. For example, the code below generates a heatmap showing the expression of the placenta specific genes across all the tissues.
 
 ```{r eval=TRUE}
 library(tidyr)
-seExp<-output[[2]][["Placenta"]][[1]]
+seExp<-output[[2]][["Placenta"]]
 exp<-setNames(data.frame(assay(seExp), row.names = rowData(seExp)[,1]), colData(seExp)[,1])
 exp$Gene<-row.names(exp)
 exp<-exp %>% gather(Tissue=1:(ncol(exp)-1))
@@ -144,19 +142,19 @@ ggplot(exp, aes(key, Gene)) + geom_tile(aes(fill = value),
 ```
 
 #### Retrieval of input tissue-specific genes
-The second item in the second object of the `output` list has tissue-specificity information for the input genes. The code below retrieves the tissue-specific genes along with the type of tissue-specificity in placenta tissue.
+The third object in the `output` is a list containing the tissue-specificity information for the input genes. The code below retrieves the tissue-specific genes along with the type of tissue-specificity in placenta tissue.
 
 ```{r eval=TRUE}
-seGroupInf<-output[[2]][["Placenta"]][[2]]
+seGroupInf<-output[[3]][["Placenta"]]
 groupInf<-data.frame(assay(seGroupInf))
 print(head(groupInf))
 ```
 
 
 #### Retrieval of tissue-specific genes that could not be mapped
-The third object in the `output` list is a character vector that has a list of input genes that were not identified in the tissue-specific gene data.
+The fourth object in the `output` list is a character vector that has a list of input genes that were not identified in the tissue-specific gene data.
 ```{r eval=TRUE}
-print(geneIds(output[[3]]))
+print(geneIds(output[[4]]))
 ```
 
 ## Orthologous gene enrichment

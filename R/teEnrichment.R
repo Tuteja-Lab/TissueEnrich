@@ -25,10 +25,10 @@ utils::globalVariables(c("dataset", "%>%", "Gene",
 #' @export
 #' @return The output is a list with three objects. The first object is the
 #' SummarizedExperiment object containing the enrichment results, the second
-#' object contains the expression values and tissue-specificity information
-#' of the tissue-specific genes for genes from the input gene set, and the
-#' third is a GeneSet object containing genes that were not identified in the
-#' tissue-specific gene data.
+#' and the third object contains the expression values and tissue-specificity
+#' information of the tissue-specific genes for genes from the input
+#' gene set, and the fourth is a GeneSet object containing genes that
+#' were not identified in the tissue-specific gene data.
 #'
 #' @examples
 #' library(dplyr)
@@ -275,10 +275,17 @@ teEnrichment <- function(inputGenes = NULL, rnaSeqDataset = 1,
                                 row.names = unlist(df[, 3]))
     seOutput <- SummarizedExperiment(assays = SimpleList(as.matrix(output)),
         rowData = row.names(output), colData = colnames(output))
-    overlapTissueGenesList <- do.call(function(...) mapply(c,
-        ..., SIMPLIFY = FALSE), args = list(df[, 4],
-        df[, 5]))
-    names(overlapTissueGenesList) <- df[, 3]
-    return(list(seOutput, overlapTissueGenesList,
+    seTeExpressionData <- df[, 4]
+    names(seTeExpressionData) <- df[, 3]
+    seTeInputGeneGroups <- df[, 5]
+    names(seTeInputGeneGroups) <- df[, 3]
+    ## Not working with R 3.5
+    # overlapTissueGenesList <- do.call(function(...) mapply(c,
+    #     ..., SIMPLIFY = FALSE), args = list(df[, 4],
+    #     df[, 5]))
+    # overlapTissueGenesList <- apply(cbind(df[,4], df[,5]),1,
+    #                                 function(x) unname(unlist(x)))
+    # names(overlapTissueGenesList) <- df[, 3]
+    return(list(seOutput, seTeExpressionData, seTeInputGeneGroups,
                 GeneSet(geneIds = genesNotFound)))
 }
