@@ -8,6 +8,8 @@ You need R version above 3.2 to run this application. Other dependencies are:
 * `ensurer (>= 1.1)`
 * `ggplot2 (>= 2.2.1)`
 * `tidyr (>=0.8.0)`
+* `SummarizedExperiment (>= 1.6.5)`
+* `GSEABase (>= 1.38.2)`
 
 **How to install the R package**
 
@@ -15,9 +17,14 @@ You need R version above 3.2 to run this application. Other dependencies are:
 * Open R terminal or RStudio terminal
 * Install Dependencies
 * `install.packages(c("dplyr","ensurer","ggplot2","tidyr"))`
-* Set the current path to the Bitbucket repository `setwd(<Path of bitbucket repository>)`
-* Run command `install.packages("TissueEnrich_1.0.0.tar.gz", repos = NULL, type="source")`
+* `source("https://bioconductor.org/biocLite.R")`
+* `biocLite("SummarizedExperiment")`
+* `biocLite("GSEABase")`
+* Now install the `devtools` package.
+* `install.packages(devtools)`
+* `library(devtools)`
+* Run command `install_github("Tuteja-Lab/TissueEnrich")`
 
 **More about the package**
 
-* Check more details about the package in the vignette `vignette(“TissueEnrich”)`
+* Check more details about the package in the vignette `vignette("TissueEnrich")`
