@@ -215,7 +215,7 @@ teEnrichment <- function(inputGenes = NULL, rnaSeqDataset = 1,
                         colMeans(teExpressionData[
                             teExpressionData$Gene.name == col,
                             c(seq(1, (ncol(teExpressionData) - 2)))]),
-                              numeric(length(tissueNames)))))
+                                numeric(length(tissueNames)))))
             } else {
                 teExpressionData <- teExpressionData[,
                     seq(1, (ncol(teExpressionData) - 2))]
