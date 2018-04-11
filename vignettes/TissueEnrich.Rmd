@@ -101,8 +101,8 @@ The `output` is a list object containing the enrichment results. These results a
 
 ### Exploring tissue-specific gene enrichment results
 
-#### Tissue-specific gene enrichment histogram using `ggplot2`
-The first object in the `output` list is a `SummarizedExperiment` object containing the $-Log_{10}(P-Value)$, corresponding to the tissue-specific gene enrichment, along with the number of tissue-specific genes in the input gene set. This object can be used to visualize tissue-specific gene enrichment in the form of a histogram.
+#### Tissue-specific gene enrichment bar chart using `ggplot2`
+The first object in the `output` list is a `SummarizedExperiment` object containing the $-Log_{10}(P-Value)$, corresponding to the tissue-specific gene enrichment, along with the number of tissue-specific genes in the input gene set. This object can be used to visualize tissue-specific gene enrichment in the form of a bar chart.
 
 ```{r eval=TRUE}
 seEnrichmentOutput<-output[[1]]

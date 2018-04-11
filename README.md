@@ -2,7 +2,7 @@
 
 **Requirement**
 
-You need R version above 3.2 to run this application. Other dependencies are:
+You need R version above 3.5 to run this application. Other dependencies are:
 
 * `dplyr (>= 0.7.3)`
 * `ensurer (>= 1.1)`
