@@ -176,8 +176,7 @@ teEnrichment <- function(inputGenes = NULL, rnaSeqDataset = 1,
         ##### list########
         genesNotFound <- c()
         genesNotFound <- base::setdiff(inputGenes,
-            geneMappingForCurrentDataset[,
-                                        geneIdHeaderMapping[[geneFormat]][1]])
+            geneMappingForCurrentDataset[, mappingHeader[2]])
         ##### Convert the Gene Id########
         geneId <- geneMappingForCurrentDataset[, mappingHeader[2]] %in%
             inputGenes

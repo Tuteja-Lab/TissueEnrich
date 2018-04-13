@@ -1,5 +1,7 @@
-FEATURES IN VERSION 0.99.0
+FEATURES IN VERSION 1.00
 -----------------------
+The TissueEnrich package is used to calculate enrichment of tissue-specific genes in a set of input genes. For example, the user can input the most highly expressed genes from RNA-Seq data, or gene co-expression modules to determine which tissue-specific genes are enriched in those datasets. It has the following three functions.
 
-    o Calculation of tissue-specific gene enrichment using human protein atlas, GTEx, and Mouse ENCODE dataset.
-    o Calculation of tissue specific gene in one’s own dataset.
+    o "teEnrichment": Given a gene list as input, this function calculates the tissue-specific gene enrichment using            tissue-specific genes from either human or mouse RNA-Seq datasets.
+    o "teGeneRetrieval": Given gene expression data across tissues, this function defines tissue-specific genes by using        the algorithm from the HPA.
+    o "teEnrichmentCustom": Given a gene list and tissue-specific genes from teGeneRetrieval as input, this function            calculates the tissue-specific gene enrichment.
