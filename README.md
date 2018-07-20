@@ -20,7 +20,7 @@ You need R version above 3.5 to run this application. Other dependencies are:
 * `install.packages("BiocManager")`
 * `BiocManager::install("SummarizedExperiment")`
 * `BiocManager::install("GSEABase")`
-* Now install the `devtools` package.
+* Now install the `devtools` package
 * `install.packages(devtools)`
 * `library(devtools)`
 * Run command `install_github("Tuteja-Lab/TissueEnrich")`
