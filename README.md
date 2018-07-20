@@ -17,9 +17,9 @@ You need R version above 3.5 to run this application. Other dependencies are:
 * Open R terminal or RStudio terminal
 * Install Dependencies
 * `install.packages(c("dplyr","ensurer","ggplot2","tidyr"))`
-* `source("https://bioconductor.org/biocLite.R")`
-* `biocLite("SummarizedExperiment")`
-* `biocLite("GSEABase")`
+* `install.packages("BiocManager")`
+* `BiocManager::install("SummarizedExperiment")`
+* `BiocManager::install("GSEABase")`
 * Now install the `devtools` package.
 * `install.packages(devtools)`
 * `library(devtools)`
