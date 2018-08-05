@@ -229,7 +229,7 @@ genes<-system.file("extdata", "inputGenesEnsembl.txt", package = "TissueEnrich")
 inputGenes<-scan(genes,character())
 gs<-GeneSet(geneIds=inputGenes)
 output2<-teEnrichmentCustom(gs,output)
-enrichmentOutput<-setNames(data.frame(assay(output2[[1]]), row.names = rowData(seEnrichmentOutput)[,1]), colData(output2[[1]])[,1])
+enrichmentOutput<-setNames(data.frame(assay(output2[[1]]), row.names = rowData(output2[[1]])[,1]), colData(output2[[1]])[,1])
 ggplot(enrichmentOutput,aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tissue.Specific.Genes,fill = Tissue))+
       geom_bar(stat = 'identity')+
       labs(x='', y = '-LOG10(P-Value)')+
