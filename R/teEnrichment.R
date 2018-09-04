@@ -22,6 +22,11 @@ utils::globalVariables(c("dataset", "%>%", "Gene",
 #'  3 for 'Tissue-Enhanced', and 4 for 'Group-Enriched'. Default 1.
 #' @param multiHypoCorrection Flag to correct P-values for multiple hypothesis
 #' using BH method. Default TRUE.
+#' @param backgroundGenes A GeneSet object containing the background gene
+#' list, organism type ('Homo Sapiens' or 'Mus Musculus'), and gene id
+#' identifier (Gene Symbol or ENSEMBL identifier). The input genes must
+#' be present in the background gene list. If not provided all the genes
+#' will be used as background.
 #' @export
 #' @return The output is a list with three objects. The first object is the
 #' SummarizedExperiment object containing the enrichment results, the second
@@ -57,7 +62,8 @@ utils::globalVariables(c("dataset", "%>%", "Gene",
 
 
 teEnrichment <- function(inputGenes = NULL, rnaSeqDataset = 1,
-    tissueSpecificGeneType = 1, multiHypoCorrection = TRUE) {
+    tissueSpecificGeneType = 1, multiHypoCorrection = TRUE,
+    backgroundGenes = NULL) {
     ### Add checks for the conditions
     inputGenes <- ensurer::ensure_that(inputGenes,
         !is.null(.) && (class(.) == "GeneSet") && !is.null(geneIds(.)),
@@ -80,9 +86,26 @@ teEnrichment <- function(inputGenes = NULL, rnaSeqDataset = 1,
         !is.null(.) && is.logical(.),
         err_desc = "Please enter correct multiHypoCorrection.
                     It should be either TRUE or FALSE")
+
     geInputGenes <- inputGenes
     inputGenes <- geneIds(inputGenes)
 
+    backgroundGenes <- ensurer::ensure_that(backgroundGenes,
+        is.null(.) || (class(.) == "GeneSet" && !is.null(geneIds(.)) &&
+        length(intersect(inputGenes,geneIds(.))) == length(unique(inputGenes))),
+        err_desc = "Please enter correct backgroundGenes.
+                    It should be a Gene set object.
+                    All input genes must be present in the background list")
+
+    bgGenesFlag <- FALSE
+    if(!is.null(backgroundGenes))
+    {
+        bgGenesFlag <- TRUE
+        geBackgroundGenes <- backgroundGenes
+        backgroundGenes <- geneIds(geBackgroundGenes)
+        message("No background list provided. Using all the
+                genes as background.")
+    }
     ## Load the RNA-Seq dataset with mappings
     e <- new.env()
     load(file = system.file("extdata", "combine-expression.rda",
@@ -137,6 +160,11 @@ teEnrichment <- function(inputGenes = NULL, rnaSeqDataset = 1,
     geneFormat <- geneIdMap[[inputGeneId]]
     inputGenes <- toupper(inputGenes)
     inputGenes <- unique(inputGenes)
+    if(bgGenesFlag)
+    {
+        backgroundGenes <- toupper(backgroundGenes)
+        backgroundGenes <- unique(backgroundGenes)
+    }
     # print(isHomolog) Check if it is ortholog
     # comparison or not#######
     if (isHomolog) {
@@ -153,7 +181,15 @@ teEnrichment <- function(inputGenes = NULL, rnaSeqDataset = 1,
             row.names(expressionDataLocal)
         geneMappingForCurrentDataset <- geneMapping[geneId,]
         genesNotFound <- base::setdiff(inputGenes,
-            geneMappingForCurrentDataset[, mappingList[1]])
+                            geneMappingForCurrentDataset[, mappingList[1]])
+        ##Change the mapping genes based on background genes
+        if(bgGenesFlag)
+        {
+            geneId <- geneMappingForCurrentDataset[, mappingList[1]] %in%
+                backgroundGenes
+            geneMappingForCurrentDataset <- geneMappingForCurrentDataset[
+                                            geneId, ]
+        }
         geneId <- geneMappingForCurrentDataset[, mappingList[1]] %in%
             inputGenes
         inputEnsemblGenes <- geneMappingForCurrentDataset[geneId,
@@ -177,6 +213,17 @@ teEnrichment <- function(inputGenes = NULL, rnaSeqDataset = 1,
         genesNotFound <- c()
         genesNotFound <- base::setdiff(inputGenes,
             geneMappingForCurrentDataset[, mappingHeader[2]])
+
+        ##Change the mapping genes based on background genes
+        if(bgGenesFlag)
+        {
+            geneId <- geneMappingForCurrentDataset[, mappingHeader[2]] %in%
+                backgroundGenes
+            geneMappingForCurrentDataset <- geneMappingForCurrentDataset[
+                geneId, ]
+            finalTissueSpecificGenes <- finalTissueSpecificGenes %>%
+                dplyr::filter(Gene %in% geneMappingForCurrentDataset$Gene)
+        }
         ##### Convert the Gene Id########
         geneId <- geneMappingForCurrentDataset[, mappingHeader[2]] %in%
             inputGenes
@@ -255,12 +302,16 @@ teEnrichment <- function(inputGenes = NULL, rnaSeqDataset = 1,
             colData = colnames(teInputGeneGroups))
         tissueName <- tissueDetails[tissueDetails$RName ==
             tissue, "TissueName"]
-        GenesInTissue <- nrow(tissueGenes)
-        pValue <- stats::phyper(overlapGenes - 1, GenesInTissue,
-            nrow(geneMappingForCurrentDataset) - GenesInTissue,
-            length(inputEnsemblGenes), lower.tail = FALSE)
+        nTeGenesInTissue <- nrow(tissueGenes)
+        nTotalGenes <- nrow(geneMappingForCurrentDataset)
+        nTotalInputGenes <- length(inputEnsemblGenes)
+        pValue <- stats::phyper(overlapGenes - 1, nTeGenesInTissue,
+            nTotalGenes - nTeGenesInTissue,
+            nTotalInputGenes, lower.tail = FALSE)
+        foldChange <- (overlapGenes/nTotalInputGenes)/
+            (nTeGenesInTissue/nTotalGenes)
         return(c(pValue, overlapGenes, tissueName,
-            seTeExpressionData, seTeInputGeneGroups))
+            seTeExpressionData, seTeInputGeneGroups,foldChange))
     })
 
     df <- do.call("rbind", x)
@@ -272,6 +323,7 @@ teEnrichment <- function(inputGenes = NULL, rnaSeqDataset = 1,
     pValueList <- (-log10(pValueList))
     output <- data.frame(Log10PValue=pValueList,
                             Tissue.Specific.Genes=unlist(df[, 2]),
+                                fold.change=unlist(df[, 6]),
                                 row.names = unlist(df[, 3]))
     seOutput <- SummarizedExperiment(assays = SimpleList(as.matrix(output)),
         rowData = row.names(output), colData = colnames(output))

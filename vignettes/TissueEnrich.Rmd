@@ -64,6 +64,8 @@ When using `teEnrichment`, the user can specify the RNA-Seq dataset (`rnaSeqData
 * 2 for "GTEx"
 * 3 for "Mouse ENCODE"
 
+**Note:** The tissues isolated from embryonic stages are prefixed with 'E' followed by the timepoint. For example in Mouse ENCODE data, the placenta tissue isolated from embryonic day 14.5 is named as E14.5-Placenta. All the other tissues are isolated from adults.
+
 ## Defining Tissue-specific Genes
 Tissue-specific genes are defined using the algorithm from the HPA [@HPA2015], and can be grouped as follows:
 
@@ -82,7 +84,17 @@ In `teEnrichment`, the user can specify the type of tissue-specific genes (`tiss
 The hypergeometric test is used to calculate tissue-specific gene enrichment. The p-value is calculated as:
 
 $$ P(X \gt k) = \sum\limits_{i=k+1}^n \frac{{{K}\choose{i}} {{N-K}\choose{n-i}}}{{{N}\choose{n}}} $$
-Where, N is the total number of genes, K is the total number of tissue-specific genes for a tissue, n is the number of genes in the input gene set, k is the number of tissue-specific genes in the input gene set. The p-values can be corrected for multiple hypothesis testing using the Bonferroni Hochberg correction by setting `multiHypoCorrection = TRUE` (It is `TRUE` by default).
+and the fold-change is calculated as:
+$$ Fold-change =\left( \frac{k}{n} \right)/\left( \frac{K}{N} \right) $$
+
+Where, N is the total number of genes, K is the total number of tissue-specific genes for a tissue, n is the number of genes in the input gene set, k is the number of tissue-specific genes in the input gene set. The p-values can be corrected for multiple hypothesis testing using the Benjamini & Hochberg correction by setting `multiHypoCorrection = TRUE` (It is `TRUE` by default).
+
+## Background genes
+TissueEnrich now enables users to provide the background genes for carrying out tissue-specific gene enrichment. In this case, instead of using all the genes in the dataset, a background gene set is being used to carry out the enrichment analysis. It should be noted that the background gene set must have all the genes of the input gene set. The p-value is calculated as:
+$$ P(X \gt k) = \sum\limits_{i=k+1}^n \frac{{{K_b}\choose{i}} {{N_b-K_b}\choose{n-i}}}{{{N_b}\choose{n}}} $$
+and the fold-change is calculated as:
+$$ Fold-change =\left( \frac{k}{n} \right)/\left( \frac{K_b}{N_b} \right) $$
+Where, $N_b$ is the total number of bacground genes, $K_b$ is the total number of tissue-specific genes for a tissue in background genes, n is the number of genes in the input gene set, k is the number of tissue-specific genes in the input gene set. The p-values can be corrected for multiple hypothesis testing using the Benjamini & Hochberg correction by setting `multiHypoCorrection = TRUE` (It is `TRUE` by default). If the background gene set is not provided all the genes will be used as background.
 
 ## Example: Tissue-specific gene enrichment
 This example uses trophectoderm (TE) specific genes identified from single cell RNA-Seq analyses, performed on human blastocysts on days 5, 6, and 7 of preimplantation development [@Petropoulos2016]. The single cells are assigned to either the inner cell mass (epiblast plus emerging extraembryonic endoderm) or the TE using PCA. After that, a list of 100 TE-specific genes was generated using differential gene expression analysis [@Petropoulos2016]. We used those 100 genes as the input gene set and carried out tissue-specific gene enrichment using the tissue-specific genes defined by the HPA dataset.

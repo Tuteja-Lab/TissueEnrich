@@ -5,7 +5,8 @@
 \title{Calculate tissue-specific gene enrichment using the hypergeometric test}
 \usage{
 teEnrichment(inputGenes = NULL, rnaSeqDataset = 1,
-  tissueSpecificGeneType = 1, multiHypoCorrection = TRUE)
+  tissueSpecificGeneType = 1, multiHypoCorrection = TRUE,
+  backgroundGenes = NULL)
 }
 \arguments{
 \item{inputGenes}{A GeneSet object containing the input genes, organism type
@@ -22,6 +23,12 @@ specific genes to be used. 1 for 'All' (default), 2 for 'Tissue-Enriched',
 
 \item{multiHypoCorrection}{Flag to correct P-values for multiple hypothesis
 using BH method. Default TRUE.}
+
+\item{backgroundGenes}{A GeneSet object containing the background gene
+list, organism type ('Homo Sapiens' or 'Mus Musculus'), and gene id
+identifier (Gene Symbol or ENSEMBL identifier). The input genes must
+be present in the background gene list. If not provided all the genes
+will be used as background.}
 }
 \value{
 The output is a list with three objects. The first object is the

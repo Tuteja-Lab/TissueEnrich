@@ -1,7 +1,7 @@
 Package: TissueEnrich
 Type: Package
 Title: A tool to calculate tissue-specific gene enrichment
-Version: 0.99.15
+Version: 1.0.3
 Authors@R: c(person("Ashish Jain",
         email="jain@iastate.edu",
         role=c("aut", "cre")), person("Geetu Tuteja",
@@ -11,7 +11,7 @@ Description: The TissueEnrich package is used to calculate enrichment of tissue-
 License: MIT + file LICENSE
 VignetteBuilder: knitr
 Depends:
-    R (>= 3.5),
+    R (>= 3.4),
     ensurer (>= 1.1.0),
     ggplot2 (>= 2.2.1),
     tidyr (>= 0.8.0),

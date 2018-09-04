@@ -25,7 +25,7 @@ test_that("check the length of the output from teGeneEnrichment", {
 })
 
 test_that("check number of columns of the enrichment matrix", {
-  expect_equal(ncol(TSGEOutput), 2)
+  expect_equal(ncol(TSGEOutput), 3)
 })
 
 test_that("check number of tissues in the enrichment matrix using Human protein atlas output", {

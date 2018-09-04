@@ -17,6 +17,11 @@ utils::globalVariables(c("%>%", ".", "geneIds", "Log10PValue", "SimpleList"))
 #' Default 1.
 #' @param multiHypoCorrection Flag to correct P-values for multiple hypothesis
 #' using BH method. Default TRUE.
+#' @param backgroundGenes A GeneSet object containing the background gene
+#' list, organism type ('Homo Sapiens' or 'Mus Musculus'), and gene id
+#' identifier (Gene Symbol or ENSEMBL identifier). The input genes must
+#' be present in the background gene list. If not provided all the genes
+#' will be used as background.
 #' @export
 #' @return The output is a list with three objects. The first object is the
 #' SummarizedExperiment object containing the enrichment results, the second
@@ -54,7 +59,8 @@ utils::globalVariables(c("%>%", ".", "geneIds", "Log10PValue", "SimpleList"))
 #' panel.grid.major= element_blank(),panel.grid.minor = element_blank())
 
 teEnrichmentCustom <- function(inputGenes = NULL, tissueSpecificGenes = NULL,
-    tissueSpecificGeneType = 1, multiHypoCorrection = TRUE) {
+    tissueSpecificGeneType = 1, multiHypoCorrection = TRUE,
+    backgroundGenes = NULL) {
     # start.time <- Sys.time()
     ### Add checks for the conditions
     inputGenes <- ensurer::ensure_that(inputGenes, !is.null(.) && (class(.) ==
@@ -109,10 +115,30 @@ teEnrichmentCustom <- function(inputGenes = NULL, tissueSpecificGenes = NULL,
     geInputGenes <- inputGenes
     inputGenes <- geneIds(inputGenes)
     inputGenes <- unique(inputGenes)
+
+    backgroundGenes <- ensurer::ensure_that(backgroundGenes,
+        is.null(.) || (class(.) == "GeneSet" && !is.null(geneIds(.)) &&
+        length(intersect(inputGenes,geneIds(.))) == length(inputGenes)),
+        err_desc = "Please enter correct backgroundGenes.
+        It should be a Gene set object.
+        All input genes must be present in the background list")
+
     totalGenes <- as.character(unique(tissueSpecificGenes$Gene))
     genesNotFound <- GeneSet(geneIds = base::setdiff(inputGenes, totalGenes))
     inputEnsemblGenes <- intersect(inputGenes, totalGenes)
 
+    bgGenesFlag <- FALSE
+    if(!is.null(backgroundGenes))
+    {
+        bgGenesFlag <- TRUE
+        geBackgroundGenes <- backgroundGenes
+        backgroundGenes <- geneIds(geBackgroundGenes)
+        message("No background list provided. Using all the
+                genes as background.")
+        totalGenes <- backgroundGenes
+        ridx <- tissueSpecificGenes$Gene %in% totalGenes
+        finalTissueSpecificGenes <- tissueSpecificGenes[ridx, , drop = FALSE]
+    }
     #### Calculate the Hypergeometric P-Value#########
     tissueNames <- as.character(unique(finalTissueSpecificGenes$Tissue))
     pValueList <- c()
@@ -131,12 +157,17 @@ teEnrichmentCustom <- function(inputGenes = NULL, tissueSpecificGenes = NULL,
                                     rowData = row.names(teInputGeneGroups),
                                     colData = colnames(teInputGeneGroups))
 
-                    GenesInTissue <- nrow(tissueGenes)
-                    pValue <- stats::phyper(overlapGenes - 1, GenesInTissue,
-                                            length(totalGenes) - GenesInTissue,
-                                            length(inputEnsemblGenes),
+                    nTeGenesInTissue <- nrow(tissueGenes)
+                    nTotalGenes <- length(totalGenes)
+                    nTotalInputGenes <- length(inputEnsemblGenes)
+                    pValue <- stats::phyper(overlapGenes - 1, nTeGenesInTissue,
+                                            nTotalGenes - nTeGenesInTissue,
+                                            nTotalInputGenes,
                                             lower.tail = FALSE)
-                    return(c(pValue,overlapGenes,tissue,seTeInputGeneGroups))
+                    foldChange <- (overlapGenes/nTotalInputGenes)/
+                        (nTeGenesInTissue/nTotalGenes)
+                    return(c(pValue,overlapGenes,tissue,
+                                seTeInputGeneGroups,foldChange))
                 })
     df <- do.call("rbind", x)
     pValueList <- unlist(df[,1])
@@ -145,11 +176,13 @@ teEnrichmentCustom <- function(inputGenes = NULL, tissueSpecificGenes = NULL,
         pValueList <- stats::p.adjust(pValueList, method = "BH")
     }
     pValueList <- (-log10(pValueList))
-    output <- matrix(c(pValueList,unlist(df[,2])),nrow=length(pValueList))
+    output <- matrix(c(pValueList,unlist(df[,2]),unlist(df[,5])),
+        nrow=length(pValueList))
     seOutput <- SummarizedExperiment(assays = SimpleList(output),
                                     rowData = unlist(df[,3]),
                                     colData = c("Log10PValue",
-                                                "Tissue.Specific.Genes"))
+                                                "Tissue.Specific.Genes",
+                                                "fold.change"))
     overlapTissueGenesList<-df[,4]
     names(overlapTissueGenesList)<-df[,3]
     # end.time <- Sys.time()

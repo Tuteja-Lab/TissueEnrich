@@ -1,3 +1,8 @@
+FEATURES IN VERSION 1.03
+-----------------------
+o Now the tool also calculates the fold-change and give it in the output.
+o Users now have the option to enter background genes for tissue-specific gene enrichment.
+
 FEATURES IN VERSION 1.00
 -----------------------
 The TissueEnrich package is used to calculate enrichment of tissue-specific genes in a set of input genes. For example, the user can input the most highly expressed genes from RNA-Seq data, or gene co-expression modules to determine which tissue-specific genes are enriched in those datasets. It has the following three functions.

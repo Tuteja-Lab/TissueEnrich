@@ -6,7 +6,8 @@
 custom datasets}
 \usage{
 teEnrichmentCustom(inputGenes = NULL, tissueSpecificGenes = NULL,
-  tissueSpecificGeneType = 1, multiHypoCorrection = TRUE)
+  tissueSpecificGeneType = 1, multiHypoCorrection = TRUE,
+  backgroundGenes = NULL)
 }
 \arguments{
 \item{inputGenes}{An GeneSet object containing the input genes.}
@@ -21,6 +22,12 @@ Default 1.}
 
 \item{multiHypoCorrection}{Flag to correct P-values for multiple hypothesis
 using BH method. Default TRUE.}
+
+\item{backgroundGenes}{A GeneSet object containing the background gene
+list, organism type ('Homo Sapiens' or 'Mus Musculus'), and gene id
+identifier (Gene Symbol or ENSEMBL identifier). The input genes must
+be present in the background gene list. If not provided all the genes
+will be used as background.}
 }
 \value{
 The output is a list with three objects. The first object is the
