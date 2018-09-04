@@ -103,6 +103,8 @@ teEnrichment <- function(inputGenes = NULL, rnaSeqDataset = 1,
         bgGenesFlag <- TRUE
         geBackgroundGenes <- backgroundGenes
         backgroundGenes <- geneIds(geBackgroundGenes)
+    }else
+    {
         message("No background list provided. Using all the
                 genes as background.")
     }
@@ -233,6 +235,8 @@ teEnrichment <- function(inputGenes = NULL, rnaSeqDataset = 1,
 
     #### Calculate the Hypergeometric P-Value#########
     tissueNames <- as.character(tissueDetails$RName)
+    print(paste0("Total background genes:",nrow(geneMappingForCurrentDataset)))
+    print(paste0("Total input genes:",length(inputEnsemblGenes)))
     x <- lapply(tissueNames, FUN = function(tissue) {
 
         tissueGenes <- finalTissueSpecificGenes %>%
@@ -305,6 +309,7 @@ teEnrichment <- function(inputGenes = NULL, rnaSeqDataset = 1,
         nTeGenesInTissue <- nrow(tissueGenes)
         nTotalGenes <- nrow(geneMappingForCurrentDataset)
         nTotalInputGenes <- length(inputEnsemblGenes)
+        print(paste0("Total TS genes in ",tissue," ",nTeGenesInTissue))
         pValue <- stats::phyper(overlapGenes - 1, nTeGenesInTissue,
             nTotalGenes - nTeGenesInTissue,
             nTotalInputGenes, lower.tail = FALSE)
