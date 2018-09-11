@@ -1,7 +1,7 @@
 Package: TissueEnrich
 Type: Package
-Title: A tool to calculate tissue-specific gene enrichment
-Version: 1.0.5
+Title: Tissue-specific gene enrichment analysis
+Version: 1.0.6
 Authors@R: c(person("Ashish Jain",
         email="jain@iastate.edu",
         role=c("aut", "cre")), person("Geetu Tuteja",

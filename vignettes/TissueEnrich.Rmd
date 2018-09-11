@@ -114,12 +114,13 @@ The `output` is a list object containing the enrichment results. These results a
 ### Exploring tissue-specific gene enrichment results
 
 #### Tissue-specific gene enrichment bar chart using `ggplot2`
-The first object in the `output` list is a `SummarizedExperiment` object containing the $-Log_{10}(P-Value)$, corresponding to the tissue-specific gene enrichment, along with the number of tissue-specific genes in the input gene set. This object can be used to visualize tissue-specific gene enrichment in the form of a bar chart.
+The first object in the `output` list is a `SummarizedExperiment` object containing the $-Log_{10}(P-Value)$ and fold-change, corresponding to the tissue-specific gene enrichment, along with the number of tissue-specific genes in the input gene set. This object can be used to visualize tissue-specific gene enrichment in the form of a bar chart using the $-Log_{10}(P-Value)$ values.
 
 ```{r eval=TRUE}
 seEnrichmentOutput<-output[[1]]
 enrichmentOutput<-setNames(data.frame(assay(seEnrichmentOutput),row.names = rowData(seEnrichmentOutput)[,1]), colData(seEnrichmentOutput)[,1])
 enrichmentOutput$Tissue<-row.names(enrichmentOutput)
+head(enrichmentOutput)
 ggplot(enrichmentOutput,aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tissue.Specific.Genes,fill = Tissue))+
       geom_bar(stat = 'identity')+
       labs(x='', y = '-LOG10(P-Value)')+
