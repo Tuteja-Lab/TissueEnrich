@@ -123,7 +123,7 @@ enrichmentOutput$Tissue<-row.names(enrichmentOutput)
 head(enrichmentOutput)
 ggplot(enrichmentOutput,aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tissue.Specific.Genes,fill = Tissue))+
       geom_bar(stat = 'identity')+
-      labs(x='', y = '-LOG10(P-Value)')+
+      labs(x='', y = '-LOG10(P-Adjusted)')+
       theme_bw()+
       theme(legend.position="none")+
       theme(plot.title = element_text(hjust = 0.5,size = 20),axis.title = element_text(size=15))+
@@ -131,6 +131,19 @@ ggplot(enrichmentOutput,aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label =
 ```
 
 In the plot above, the x-axis shows each of the tissues, and the y-axis represents the tissue-specific gene enrichment ($-Log_{10}(P-Value)$) values. As expected, the 100 TE-specific genes show enrichment for placenta specific genes.
+
+This output object used to visualize tissue-specific gene enrichment using the $-Log_{10}(P-Value)$ values can also be used to plot the fold-change values.
+```{r eval=TRUE}
+ggplot(enrichmentOutput,aes(x=reorder(Tissue,-fold.change),y=fold.change,label = Tissue.Specific.Genes,fill = Tissue))+
+      geom_bar(stat = 'identity')+
+      labs(x='', y = 'Fold change')+
+      theme_bw()+
+      theme(legend.position="none")+
+      theme(plot.title = element_text(hjust = 0.5,size = 20),axis.title = element_text(size=15))+
+      theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),panel.grid.major= element_blank(),panel.grid.minor = element_blank())
+```
+
+In the plot above, the x-axis shows each of the tissues, and the y-axis represents the fold-change values of the tissue-specific gene enrichment.
 
 #### Heatmap to show expression profiles of tissue-specific genes using `ggplot2`
 The second object in the `output` is a list containing the expression values of the tissue-specific genes identified from the input gene set. The expression values can be visualized in the form of a heatmap. For example, the code below generates a heatmap showing the expression of the placenta specific genes across all the tissues.
@@ -188,7 +201,7 @@ enrichmentOutput<-setNames(data.frame(assay(seEnrichmentOutput), row.names = row
 enrichmentOutput$Tissue<-row.names(enrichmentOutput)
 ggplot(enrichmentOutput,aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tissue.Specific.Genes,fill = Tissue))+
       geom_bar(stat = 'identity')+
-      labs(x='', y = '-LOG10(P-Value)')+
+      labs(x='', y = '-LOG10(P-Adjusted)')+
       theme_bw()+
       theme(legend.position="none")+
       theme(plot.title = element_text(hjust = 0.5,size = 20),axis.title = element_text(size=15))+
@@ -245,7 +258,7 @@ output2<-teEnrichmentCustom(gs,output)
 enrichmentOutput<-setNames(data.frame(assay(output2[[1]]), row.names = rowData(output2[[1]])[,1]), colData(output2[[1]])[,1])
 ggplot(enrichmentOutput,aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,label = Tissue.Specific.Genes,fill = Tissue))+
       geom_bar(stat = 'identity')+
-      labs(x='', y = '-LOG10(P-Value)')+
+      labs(x='', y = '-LOG10(P-Adjusted)')+
       theme_bw()+
       theme(legend.position="none")+
       theme(plot.title = element_text(hjust = 0.5,size = 20),axis.title = element_text(size=15))+
