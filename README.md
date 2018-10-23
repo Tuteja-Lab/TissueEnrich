@@ -1,5 +1,14 @@
 # TissueEnrich: R package to carry out tissue-specific gene enrichment.
 
+**Citation**
+
+If you use TissueEnrich in published research, please cite:
+
+> Jain, A, Tuteja, G. (2018)
+> TissueEnrich: Tissue-specific gene enrichment analysis.
+> *Bioinformatics*, **bty890**.
+> [10.1093/bioinformatics/bty890](https://academic.oup.com/bioinformatics/advance-article-abstract/doi/10.1093/bioinformatics/bty890/5140218)
+
 **Requirement**
 
 You need R version above 3.5 to run this application. Other dependencies are:

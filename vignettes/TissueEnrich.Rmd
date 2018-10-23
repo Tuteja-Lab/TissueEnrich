@@ -40,6 +40,13 @@ The `TissueEnrich` package is used to calculate enrichment of tissue-specific ge
 * `teGeneRetrieval`: Given gene expression data across tissues, this function defines tissue-specific genes by using the algorithm from the HPA.
 * `teEnrichmentCustom`: Given a gene list and tissue-specific genes from teGeneRetrieval as input, this function calculates the tissue-specific gene enrichment.
 
+**Note:** if you use TissueEnrich in published research, please cite:
+
+> Jain, A, Tuteja, G. (2018)
+> TissueEnrich: Tissue-specific gene enrichment analysis.
+> *Bioinformatics*, **bty890**.
+> [10.1093/bioinformatics/bty890](https://academic.oup.com/bioinformatics/advance-article-abstract/doi/10.1093/bioinformatics/bty890/5140218)
+
 # How to get help for TissueEnrich
 Please post all the questions or queries related to TissueEnrich package on the **Bioconductor support website**. This will help us to build an information repository which can be used by other users.
 

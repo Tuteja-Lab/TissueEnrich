@@ -1,0 +1,10 @@
+citEntry(
+   entry="article",
+   title = "TissueEnrich: Tissue-specific gene enrichment analysis",
+   author = "Ashish Jain and Geetu Tuteja",
+   journal = "Bioinformatics",
+   pages = "bty890",
+   year = 2018,
+   doi = "10.1093/bioinformatics/bty890",
+   textVersion = "Jain A and Tuteja G (2018). TissueEnrich: Tissue-specific gene enrichment analysis. Bioinformatics, bty890, https://doi.org/10.1093/bioinformatics/bty890"
+)
