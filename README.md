@@ -22,8 +22,11 @@ You need R version above 3.5 to run this application. Other dependencies are:
 
 **How to install the R package**
 
-* Download or fork the bitbucket repository
-* Open R terminal or RStudio terminal
+**From Bioconductor**
+* source("https://bioconductor.org/biocLite.R") 
+* biocLite("TissueEnrich") 
+
+**From Github**
 * Install Dependencies
 * `install.packages(c("dplyr","ensurer","ggplot2","tidyr"))`
 * `install.packages("BiocManager")`
