@@ -306,6 +306,8 @@ teEnrichment <- function(inputGenes = NULL, rnaSeqDataset = 1,
             colData = colnames(teInputGeneGroups))
         tissueName <- tissueDetails[tissueDetails$RName ==
             tissue, "TissueName"]
+        samples <- tissueDetails[tissueDetails$RName ==
+            tissue, "Sample"]
         nTeGenesInTissue <- nrow(tissueGenes)
         nTotalGenes <- nrow(geneMappingForCurrentDataset)
         nTotalInputGenes <- length(inputEnsemblGenes)
@@ -316,7 +318,7 @@ teEnrichment <- function(inputGenes = NULL, rnaSeqDataset = 1,
         foldChange <- (overlapGenes/nTotalInputGenes)/
             (nTeGenesInTissue/nTotalGenes)
         return(c(pValue, overlapGenes, tissueName,
-            seTeExpressionData, seTeInputGeneGroups,foldChange))
+            seTeExpressionData, seTeInputGeneGroups,foldChange,samples))
     })
 
     df <- do.call("rbind", x)
@@ -329,6 +331,7 @@ teEnrichment <- function(inputGenes = NULL, rnaSeqDataset = 1,
     output <- data.frame(Log10PValue=pValueList,
                             Tissue.Specific.Genes=unlist(df[, 2]),
                                 fold.change=unlist(df[, 6]),
+                                samples=unlist(df[, 7]),
                                 row.names = unlist(df[, 3]))
     seOutput <- SummarizedExperiment(assays = SimpleList(as.matrix(output)),
         rowData = row.names(output), colData = colnames(output))
