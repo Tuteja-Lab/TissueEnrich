@@ -53,10 +53,12 @@ teGeneRetrieval <- function(expressionData, foldChangeThreshold = 5,
                         numeric value greater than
                         or equal to 1.")
     maxNumberOfTissues <- ensurer::ensure_that(maxNumberOfTissues,
-        !is.null(.) && is.numeric(.) && (. >= 2),
-            err_desc = "maxNumberOfTissues should be an
+                        !is.null(.) && is.numeric(.) && (. >= 2)
+                        && (. <= ncol(expressionData)),
+                        err_desc = "maxNumberOfTissues should be an
                         integer value greater than or
-                        equal to 2.")
+                        equal to 2 and less than the number
+                        of tissues in the expression data.")
 
     expressedGeneThreshold <- ensurer::ensure_that(expressedGeneThreshold,
         !is.null(.) && is.numeric(.) && (. >= 0),
