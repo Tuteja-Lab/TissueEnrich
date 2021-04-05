@@ -1,7 +1,7 @@
 Package: TissueEnrich
 Type: Package
 Title: Tissue-specific gene enrichment analysis
-Version: 1.0.7
+Version: 1.10.1
 Authors@R: c(person("Ashish Jain",
         email="jain@iastate.edu",
         role=c("aut", "cre")), person("Geetu Tuteja",
@@ -14,11 +14,11 @@ Depends:
     R (>= 3.4),
     ensurer (>= 1.1.0),
     ggplot2 (>= 2.2.1),
-    tidyr (>= 0.8.0),
     SummarizedExperiment (>= 1.6.5),
     GSEABase (>= 1.38.2)
 Imports:
     dplyr (>= 0.7.3),
+    tidyr (>= 0.8.0),
     stats
 Suggests: knitr, rmarkdown, testthat
 Encoding: UTF-8
