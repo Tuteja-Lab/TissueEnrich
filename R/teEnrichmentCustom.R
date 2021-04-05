@@ -131,13 +131,13 @@ teEnrichmentCustom <- function(inputGenes = NULL, tissueSpecificGenes = NULL,
     if(!is.null(backgroundGenes))
     {
         bgGenesFlag <- TRUE
-        geBackgroundGenes <- backgroundGenes
-        backgroundGenes <- geneIds(geBackgroundGenes)
+        totalGenes <- geneIds(backgroundGenes)
+        finalTissueSpecificGenes <- finalTissueSpecificGenes %>%
+            dplyr::filter(Gene %in% totalGenes)
+    }else
+    {
         message("No background list provided. Using all the
                 genes as background.")
-        totalGenes <- backgroundGenes
-        ridx <- tissueSpecificGenes$Gene %in% totalGenes
-        finalTissueSpecificGenes <- tissueSpecificGenes[ridx, , drop = FALSE]
     }
     #### Calculate the Hypergeometric P-Value#########
     tissueNames <- as.character(unique(finalTissueSpecificGenes$Tissue))
