@@ -26,9 +26,8 @@ You need R version above 3.5 to run this application. Other dependencies are:
 
 **How to install the R package**
 
-**From Bioconductor**
-* source("https://bioconductor.org/biocLite.R") 
-* biocLite("TissueEnrich") 
+**From Bioconductor** <br><br>
+`BiocManager::install("TissueEnrich")` <br>
 
 **From Github**
 * Install Dependencies
