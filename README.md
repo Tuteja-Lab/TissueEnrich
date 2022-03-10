@@ -1,6 +1,7 @@
 # TissueEnrich: R package to carry out tissue-specific gene enrichment.
 
 [![bioc](http://www.bioconductor.org/shields/years-in-bioc/TissueEnrich.svg)](http://bioconductor.org/packages/stats/bioc/TissueEnrich.html)
+[![bioc](http://www.bioconductor.org/shields/downloads/devel/TissueEnrich.svg)](https://bioconductor.org/packages/stats/bioc/TissueEnrich/)
 [![bioc](http://www.bioconductor.org/shields/build/devel/bioc/TissueEnrich.svg)](http://bioconductor.org/checkResults/devel/bioc-LATEST/TissueEnrich/)
 <!--[![bioc](http://www.bioconductor.org/shields/downloads/TissueEnrich.svg)](http://bioconductor.org/packages/stats/bioc/TissueEnrich/)-->
 
